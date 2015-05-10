@@ -1,0 +1,27 @@
+<head>
+	<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>
+	<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+	<script src="//connect.facebook.net/en_US/sdk.js"></script>
+	<script src="/static/all.js"></script>
+	<link rel="stylesheet" href="static/all.css">
+</head>
+<body ng-app="buasApp" ng-controller="MainController">
+	<div ng-init="checkLogin()">
+		<h1>BUWAS</h1>
+		<div>{{status}}</div>		
+	</div>
+	<div ng-show="!authResponse">
+		<a ng-click="login()">LOGIN</a>
+	</div>
+
+	
+
+	<autocomplete model="searchFormModel1.model" on-change="searchFormModel1.populate(searchKeyword,callback)" on-selected="searchFormModel1.setSelected()">
+		<div class="box abs" ng-show="$parent.populatedItems.length>0 && $parent.showSearch">
+			<div  ng-class="$index==$parent.$parent.caret?['search-result','selected']:['search-result']" ng-repeat="item in $parent.populatedItems" ng-click="$parent.$parent.selectIndex($index)">
+				<span>{{item.name}}</span>
+				<span class="coverage">{{item.coverage}}</span>
+			</div>
+		</div>
+	</autocomplete>
+</body>
