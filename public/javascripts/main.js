@@ -5,10 +5,11 @@ angular.module('buasApp', ["autocomplete","facebookService"])
       return {
           type:type,
           populate:function(keyword, callback){
-            facebookService.useApi("search",{
+            var obj={
               type:this.type,
               q:keyword
-            }).then(function(res){
+            };
+            facebookService.useApi("search",obj).then(function(res){
               callback(res.data); 
             });
           },
@@ -25,7 +26,10 @@ angular.module('buasApp', ["autocomplete","facebookService"])
   $scope.status="WAITING";
   $scope.authResponse=null;
 
-  $scope.searchFormModel1=searchFormModel.generateSearchFormModel(facebookService,"adworkposition");
+  $scope.searchJobModel=searchFormModel.generateSearchFormModel(facebookService,"adworkposition");
+  $scope.searchPageModel=searchFormModel.generateSearchFormModel(facebookService,"page");
+  $scope.searchPlaceModel=searchFormModel.generateSearchFormModel(facebookService,"place");
+  $scope.searchUserModel=searchFormModel.generateSearchFormModel(facebookService,"user");
 
   var handleLogin=function(response){
       $scope.authResponse=response.authResponse;
@@ -35,6 +39,9 @@ angular.module('buasApp', ["autocomplete","facebookService"])
     var promise = facebookService.doLogin();
     promise.then(handleLogin);    
   };
+  $scope.setViewMode=function(viewMode){
+    $scope.activeViewMode=viewMode;
+  }
   $scope.checkLogin=function(){
     var promise = facebookService.checkLoginStatus();
     promise.then(handleLogin,function(response){
@@ -42,6 +49,9 @@ angular.module('buasApp', ["autocomplete","facebookService"])
       $scope.status="LOGGED IN REJECTED";
     });
   };
+  $scope.viewModes=["PEOPLE","PAGES","PLACES","EVENTS","APPS","GROUPS","PHOTOS"];
+
+  $scope.activeViewMode=$scope.viewModes[0];
 }])
 ;
 

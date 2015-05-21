@@ -8,6 +8,11 @@ var engines = require('consolidate');
 var routes = require('./routes/index');
 var users = require('./routes/users');
 
+
+var https = require('https');
+var http = require('http');
+
+
 var app = express();
 
 app.set('views', path.join(__dirname, 'views'));
@@ -37,10 +42,5 @@ app.use(function(err, req, res, next) {
   });
 });
 module.exports = app;
-
-
-var server = app.listen(3000, function () {
-  var host = server.address().address;
-  var port = server.address().port;
-  console.log('Example app listening at http://%s:%s', host, port);
-});
+http.createServer(app).listen(3000);
+//https.createServer({}, app).listen(3000);

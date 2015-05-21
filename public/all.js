@@ -7,13 +7,13 @@ angular.module('autocomplete', [])
     scope:{
       model:'=',
       onChange:'&',
-      onSelected:'&'
+      onSelected:'&',
+      id:"="
     },
     link:function(scope,element,attr){
       var e=$(angular.element(element));
-
       var input=e.find('input').eq(0);
-      var handleKeyDown = function(evt){
+      scope.handleKeyDown = function(evt){
         switch(evt.keyCode){
           case 40:
             scope.caret++;
@@ -28,7 +28,7 @@ angular.module('autocomplete', [])
             scope.reset();
             break;
           default:
-            handleOnChange();
+            scope.handleOnChange();
         }
         if(scope.caret<-1){
           scope.caret=scope.populatedItems.length-1;
@@ -43,7 +43,7 @@ angular.module('autocomplete', [])
         });
       });
       e.click(function(evt){
-        evt.stopPropagation();
+        //evt.stopPropagation();
       });
       $($window).click(function(evt){
         $timeout(function(){
@@ -53,15 +53,16 @@ angular.module('autocomplete', [])
 
       input.keydown(function(evt){
         $timeout(function(){
-          handleKeyDown(evt);
+          console.log("DOWN "+scope.id);
+          scope.handleKeyDown(evt);
         });
       });
-      handleOnChange=function(){
+      scope.handleOnChange=function(){
         if(scope.onChange){
           scope.showSearch=true;
           var obj={
-            searchKeyword:scope.searchKeyword,
-            callback:function(result){
+            $keyword:scope.searchKeyword,
+            $callback:function(result){
               if(result){
                 scope.populatedItems=result;
                 scope.caret=-1;
@@ -95,12 +96,60 @@ angular.module('autocomplete', [])
       }
       scope.reset();
     },
-    template:"<div class='inline-block'>"
-              +"<input ng-model='searchKeyword'></input>"
-              +"<div class='rel' ng-transclude></div>"+
-              "</div>"
+    templateUrl:"/static/templates/autocomplete.html"
   };
-}]);;
+}])
+.directive("autocompleteFbUser",["$timeout","$window",function($timeout,$window){
+  return{
+    restrict: 'E',
+    transclude:false,
+    replace:true,
+    scope:{
+      model:'=',
+      onChange:'&',
+      onSelected:'&'
+    },
+    link:function(scope){
+      scope.handleOnChange=function(keyword,callback){
+        scope.onChange({
+          $keyword:keyword,
+          $callback:callback
+          });
+      };
+      scope.handleOnSelected=function(){
+        scope.onSelected();
+      };
+    },    
+    templateUrl:"/static/templates/autocompleteFbUser.html"
+  };
+}])
+.directive("autocompleteFbPage",["$timeout","$window",function($timeout,$window){
+  return{
+    restrict: 'E',
+    transclude:false,
+    replace:true,
+    scope:{
+      model:'=',
+      onChange:'&',
+      onSelected:'&'
+    },
+    link:function(scope){
+      scope.handleOnChange=function(keyword,callback){
+        scope.onChange({
+          $keyword:keyword,
+          $callback:callback
+          })
+      };
+      scope.handleOnSelected=function(){
+        scope.onSelected();
+      };
+    },
+    templateUrl:"/static/templates/autocompleteFbPage.html"
+  };
+}]);
+
+
+;
 var FunctionDictionary=function(){
 	return {
 		dictionary:[],
@@ -268,10 +317,11 @@ angular.module('buasApp', ["autocomplete","facebookService"])
       return {
           type:type,
           populate:function(keyword, callback){
-            facebookService.useApi("search",{
+            var obj={
               type:this.type,
               q:keyword
-            }).then(function(res){
+            };
+            facebookService.useApi("search",obj).then(function(res){
               callback(res.data); 
             });
           },
@@ -288,7 +338,10 @@ angular.module('buasApp', ["autocomplete","facebookService"])
   $scope.status="WAITING";
   $scope.authResponse=null;
 
-  $scope.searchFormModel1=searchFormModel.generateSearchFormModel(facebookService,"adworkposition");
+  $scope.searchJobModel=searchFormModel.generateSearchFormModel(facebookService,"adworkposition");
+  $scope.searchPageModel=searchFormModel.generateSearchFormModel(facebookService,"page");
+  $scope.searchPlaceModel=searchFormModel.generateSearchFormModel(facebookService,"place");
+  $scope.searchUserModel=searchFormModel.generateSearchFormModel(facebookService,"user");
 
   var handleLogin=function(response){
       $scope.authResponse=response.authResponse;
@@ -298,6 +351,9 @@ angular.module('buasApp', ["autocomplete","facebookService"])
     var promise = facebookService.doLogin();
     promise.then(handleLogin);    
   };
+  $scope.setViewMode=function(viewMode){
+    $scope.activeViewMode=viewMode;
+  }
   $scope.checkLogin=function(){
     var promise = facebookService.checkLoginStatus();
     promise.then(handleLogin,function(response){
@@ -305,6 +361,9 @@ angular.module('buasApp', ["autocomplete","facebookService"])
       $scope.status="LOGGED IN REJECTED";
     });
   };
+  $scope.viewModes=["PEOPLE","PAGES","PLACES","EVENTS","APPS","GROUPS","PHOTOS"];
+
+  $scope.activeViewMode=$scope.viewModes[0];
 }])
 ;
 

@@ -3,25 +3,36 @@
 	<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
 	<script src="//connect.facebook.net/en_US/sdk.js"></script>
 	<script src="/static/all.js"></script>
+	<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
 	<link rel="stylesheet" href="static/all.css">
 </head>
 <body ng-app="buasApp" ng-controller="MainController">
-	<div ng-init="checkLogin()">
-		<h1>BUWAS</h1>
-		<div>{{status}}</div>		
-	</div>
-	<div ng-show="!authResponse">
-		<a ng-click="login()">LOGIN</a>
-	</div>
+	<div class="container">
+		<div class="btn-group all-btn pull-right">
+			<button type="button" class="btn" ng-click="setViewMode('ALL')" 
+			ng-class="'ALL'==activeViewMode?['selected','btn']:['btn']">ALL</button>
+		</div>
+		<div class="btn-group main-menu pull-left">
+			<button type="button" ng-repeat="viewMode in viewModes" ng-click="setViewMode(viewMode)" 
+			ng-class="viewMode==activeViewMode?['selected','btn']:['btn']">{{viewMode}}</button>
+		</div>
+		<div class="clearfix"></div>
+		<div class="panel panel-default">
+			<div class="panel-body">
+				<div ng-init="checkLogin()">
+					<h1>BUAS GRABH</h1>
+					<h2>Graph Search With Grabber</h2>
+					<div>{{status}}</div>		
+				</div>
+				<div ng-show="!authResponse">
+					<a ng-click="login()">LOGIN</a>
+				</div>
 
-	
-
-	<autocomplete model="searchFormModel1.model" on-change="searchFormModel1.populate(searchKeyword,callback)" on-selected="searchFormModel1.setSelected()">
-		<div class="box abs" ng-show="$parent.populatedItems.length>0 && $parent.showSearch">
-			<div  ng-class="$index==$parent.$parent.caret?['search-result','selected']:['search-result']" ng-repeat="item in $parent.populatedItems" ng-click="$parent.$parent.selectIndex($index)">
-				<span>{{item.name}}</span>
-				<span class="coverage">{{item.coverage}}</span>
+				<autocomplete-fb-user  model="searchUserModel.model" on-change="searchUserModel.populate($keyword,$callback)" on-selected="searchUserModel.onSelected()">
+				</autocomplete-fb-user>
+				<autocomplete-fb-page  model="searchPageModel.model" on-change="searchPageModel.populate($keyword,$callback)" on-selected="searchPageModel.onSelected()">
+				</autocomplete-fb-page>
 			</div>
 		</div>
-	</autocomplete>
+
 </body>

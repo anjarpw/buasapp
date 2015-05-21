@@ -1,0 +1,16 @@
+<div>
+	<autocomplete model="model" on-change="handleOnChange($keyword,$callback)" on-selected="handleOnSelected()">
+		<div class="box abs" ng-show="$parent.populatedItems.length>0 && $parent.showSearch">
+			<div  ng-class="$index==$parent.$parent.caret?['search-result','selected']:['search-result']" ng-repeat="item in $parent.populatedItems" ng-click="$parent.$parent.selectIndex($index)">
+				<img ng-src="https://graph.facebook.com/{{item.id}}/picture/" width="40" height="40" class="pull-left">
+				<div class="pull-left populated-items-text">
+					<span class="lh-25px">{{item.name}}</span>
+					<div class="subcategory">
+						<span class="lh-15px">{{item.category}}</span>
+					</div>				
+				</div>
+				<div class="clearfix"></div>
+			</div>
+		</div>
+	</autocomplete>
+</div>

@@ -1,18 +1,112 @@
+.btn.active.focus, .btn.active:focus, .btn.focus, .btn:active.focus, .btn:active:focus, .btn:focus{
+	outline:0;
+}
+input:focus{
+	outline:0;	
+}
+.col-lg-1, .col-lg-10, .col-lg-11, .col-lg-12, 
+.col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6,
+.col-lg-7, .col-lg-8, .col-lg-9, 
+.col-md-1, .col-md-10, .col-md-11, .col-md-12, 
+.col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, 
+.col-md-7, .col-md-8, .col-md-9, 
+.col-sm-1, .col-sm-10, .col-sm-11, .col-sm-12, 
+.col-sm-2, .col-sm-3, .col-sm-4, .col-sm-5, .col-sm-6, 
+.col-sm-7, .col-sm-8, .col-sm-9,
+.col-xs-1, .col-xs-10, .col-xs-11, .col-xs-12,
+.col-xs-2, .col-xs-3, .col-xs-4, .col-xs-5, .col-xs-6, 
+.col-xs-7, .col-xs-8, .col-xs-9{
+	padding-left: 5px;
+	padding-right:5px;
+}
+.row{
+	margin-left: -5px;
+	margin-right: -5px;
+}
+
+@blueDark:#051945;
+@blue:#093082;
+@blueLight:mix(@blue,white,80);
+@gray:#BBC;
+@grayDark:#99A;
+@grayLight:#EEF;
+@orange:#F90;
+
+.btn{
+	padding:0 15px;
+	font-weight: bold;
+	line-height: 30px;
+}
+
+.top-menu{
+	margin-top:10px;
+	margin-bottom:10px;
+}
+
+.all-btn{
+	.top-menu;
+	.btn{
+		padding: 0 30px;
+		border:2px solid @blue;
+		background:white;
+		color:@blueDark;
+		width: 100%;
+		line-height: 28px;
+	}
+	.btn:hover{
+		background:@grayLight;
+	}
+	.btn:focus, .btn.selected{
+		background:@blueDark;
+		color:white;
+	}
+	.btn.selected:hover{
+		background:@blue;
+	}
+}
+
+
+.main-menu{
+	.top-menu;
+	.btn{
+		border:1px solid @gray;
+		background:white;
+		color:@blue;
+		line-height: 30px;
+	}
+	.btn:hover{
+		background:@grayLight;
+	}
+	.btn:focus, .btn.selected{
+		background:@blue;
+		color:white;
+	}
+}
+
+.auth-box{
+	width:100%;
+	padding: 20px;
+	border:1px solid #0F1;
+	background:#0C1;
+	color:white;
+	word-wrap:break-word;
+}
 .box{
-	border:1px solid #DDE;
+	border:1px solid @gray;
 	padding:5px;
 	width:400px;
+	background: white;
 }
 .search-result{
-	border-bottom: 1px solid #EEF;
+	border-bottom: 1px solid @grayLight;
 	padding: 5px;
 }
 .search-result .coverage{
 	text-align: right;
-	color:#667;
+	color:@gray;
 }
 .search-result.selected, .search-result:hover{
-	background:#DDF;		
+	background:@grayLight;		
 }
 .rel{
 	position: relative;
@@ -23,3 +117,20 @@
 .abs{
 	position: absolute;
 }
+.populated-items-text{
+	padding-left: 10px;
+	.subcategory{
+		font-size:11px;
+		color:@grayDark;	
+	}	
+}
+
+.loop(@from) when (@from < 101) {
+	@size:0px + @from;
+	.lh-@{size}{
+        line-height:@size;
+	}	
+    .loop(@from + 5);				
+}
+.loop(0);
+
