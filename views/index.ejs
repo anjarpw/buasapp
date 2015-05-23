@@ -27,11 +27,42 @@
 				<div ng-show="!authResponse">
 					<a ng-click="login()">LOGIN</a>
 				</div>
+				<div ng-repeat="selectedFbSearchParam in fbSearchParams">
+					<select ng-disabled="selectedFbSearchParam.model.selected" class="pull-left" ng-model="selectedFbSearchParam.criteria" ng-options="criteria.name for criteria in criterias"
+					ng-change="selectedFbSearchParam.model=selectedFbSearchParam.criteria.getSelectionModel()"
+					>
+					</select>
+					<div class="pull-left" ng-if="selectedFbSearchParam.criteria" ng-include src="'static/templates/selectors/'+selectedFbSearchParam.criteria.template">
+					</div>
+					<button ng-click="selectedFbSearchParam.model.selected=false" ng-show="selectedFbSearchParam.model.selected">Edit</button>
+					<button  ng-click="deleteSearchParam(selectedFbSearchParam)">Delete</button>
+					<div class="clearfix"></div>
+				</div>
 
-				<autocomplete-fb-user  model="searchUserModel.model" on-change="searchUserModel.populate($keyword,$callback)" on-selected="searchUserModel.onSelected()">
-				</autocomplete-fb-user>
-				<autocomplete-fb-page  model="searchPageModel.model" on-change="searchPageModel.populate($keyword,$callback)" on-selected="searchPageModel.onSelected()">
-				</autocomplete-fb-page>
+				<button ng-click="addFbParam()">Add</button>
+				{{searchPath}}
+				<button ng-click="arrangePath()">GET PATH</button>
+<!-- 				<div>
+					<span>visitor</span>
+					<autocomplete-fb-page class="inline" model="searchPlaceModel.model" on-change="searchPlaceModel.populate($keyword,$callback)" on-selected="searchPlaceModel.onSelected()">
+					</autocomplete-fb-page>
+					<br/>
+					/{{searchPlaceModel.model.id}}/visitors
+				</div>
+				<div>
+					<span>likers</span>
+					<autocomplete-fb-page class="inline" model="searchPageModel.model" on-change="searchPageModel.populate($keyword,$callback)" on-selected="searchPageModel.onSelected()">
+					</autocomplete-fb-page>
+					<br/>
+					/{{searchPageModel.model.id}}/likers
+				</div>
+				<div>
+					<span>lives in</span>
+					<autocomplete-fb-page  model="searchLocationModel.model" on-change="searchLocationModel.populate($keyword,$callback)" on-selected="searchLocationModel.onSelected()">
+					</autocomplete-fb-page>				
+					<br/>
+					/{{searchLocationModel.model.id}}/residents/present/
+				</div> -->
 			</div>
 		</div>
 

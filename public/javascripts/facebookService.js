@@ -21,7 +21,7 @@ angular.module('facebookService', [])
              deferred.reject(response);
            }a
         });              
-        return deferred.promise;
+        return deferred;
       },
       doLogin:function(){
         var deferred = $q.defer();
@@ -32,7 +32,7 @@ angular.module('facebookService', [])
              deferred.reject(response);
            }
         });              
-        return deferred.promise;
+        return deferred;
       },
       useApi:function(path, params, method){
         var deferred = $q.defer();
@@ -45,7 +45,7 @@ angular.module('facebookService', [])
             deferred.resolve(response);
            }
         });              
-        return deferred.promise;
+        return deferred;
       }
     };
 }]);

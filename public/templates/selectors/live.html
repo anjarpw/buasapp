@@ -1,0 +1,8 @@
+<div >
+	<autocomplete-fb-page ng-show="!$parent.selectedFbSearchParam.model.selected" 
+		model="$parent.selectedFbSearchParam.model.searchModel.model" 
+		on-change="$parent.selectedFbSearchParam.model.searchModel.populate($keyword,$callback)" 
+		on-selected="$parent.selectedFbSearchParam.model.onSearchItemSelected($newValue,$oldValue)">
+	</autocomplete-fb-page>
+	<div ng-show="$parent.selectedFbSearchParam.model.selected" >{{$parent.selectedFbSearchParam.model.value}}</div>
+</div>

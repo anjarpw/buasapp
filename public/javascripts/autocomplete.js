@@ -78,13 +78,17 @@ angular.module('autocomplete', [])
       }
 
       scope.selectCurrent=function(){
+        var oldValue=scope.model;
         if(scope.caret==-1){
           scope.model=scope.searchKeyword;
         }else{
           scope.model=scope.populatedItems[scope.caret];
         }
         if(scope.onSelected){
-          scope.onSelected();
+          scope.onSelected({
+            $newValue:scope.model,
+            $oldValue:oldValue
+          });
         }
         scope.reset();
       };
@@ -116,8 +120,11 @@ angular.module('autocomplete', [])
           $callback:callback
           });
       };
-      scope.handleOnSelected=function(){
-        scope.onSelected();
+      scope.handleOnSelected=function(newValue,oldValue){
+        scope.onSelected({
+          $newValue:newValue,
+          $oldValue:oldValue
+        });
       };
     },    
     templateUrl:"/static/templates/autocompleteFbUser.html"
@@ -140,8 +147,11 @@ angular.module('autocomplete', [])
           $callback:callback
           })
       };
-      scope.handleOnSelected=function(){
-        scope.onSelected();
+      scope.handleOnSelected=function(newValue,oldValue){
+        scope.onSelected({
+          $newValue:newValue,
+          $oldValue:oldValue
+        });
       };
     },
     templateUrl:"/static/templates/autocompleteFbPage.html"

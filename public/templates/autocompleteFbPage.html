@@ -1,5 +1,5 @@
 <div>
-	<autocomplete model="model" on-change="handleOnChange($keyword,$callback)" on-selected="handleOnSelected()">
+	<autocomplete model="model" on-change="handleOnChange($keyword,$callback)" on-selected="handleOnSelected($newValue,$oldValue)">
 		<div class="box abs" ng-show="$parent.populatedItems.length>0 && $parent.showSearch">
 			<div  ng-class="$index==$parent.$parent.caret?['search-result','selected']:['search-result']" ng-repeat="item in $parent.populatedItems" ng-click="$parent.$parent.selectIndex($index)">
 				<img ng-src="https://graph.facebook.com/{{item.id}}/picture/" width="40" height="40" class="pull-left">
