@@ -137,3 +137,75 @@ input:focus{
 .inline{
 	display: inline;
 }
+
+.btn.action-btn{
+	line-height: 30px;
+	height: 30px;
+	border-radius: 5px;
+}
+
+
+.fb-param{
+	margin-bottom: 10px;
+	select,input{
+		line-height: 40px;
+		height: 40px;
+		padding:0 10px;
+		&:disabled{
+			color:@grayDark;
+		}		
+	}
+	.text-result{
+		line-height: 30px;
+		padding:0 10px;		
+	}
+	select:disabled{
+		border:1px solid @gray;
+	}
+	.param-selector{
+		margin-right: 10px;
+	}
+	.close-button{
+		color:red;
+		margin-top:5px;
+		margin-right: 10px;
+		background: white;
+		&:hover{
+			background:red;
+			color:white;			
+		}
+	}
+	.edit-button{
+		color:@blue;
+		margin-top:5px;
+		margin-right: 10px;
+		background: white;
+		&:hover{
+			background:@blue;
+			color:white;			
+		}		
+	}
+	.selected-icon{
+		background: @grayLight;
+		padding: 5px;
+		margin-right: 10px;
+	}
+	.keyword{
+		line-height: 30px;
+		padding:5px 15px;
+		font-style: italic;
+		margin-right: 10px;		
+	}
+}
+
+.smaller-text{
+	font-size:0.8em;
+}
+.accordion{
+	.switch-visible{
+		visibility: visible;
+	}
+	.switch-hidden{
+		visibility: collapse;
+	}
+}

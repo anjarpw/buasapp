@@ -27,15 +27,33 @@
 				<div ng-show="!authResponse">
 					<a ng-click="login()">LOGIN</a>
 				</div>
-				<div ng-repeat="selectedFbSearchParam in fbSearchParams">
-					<select ng-disabled="selectedFbSearchParam.model.selected" class="pull-left" ng-model="selectedFbSearchParam.criteria" ng-options="criteria.name for criteria in criterias"
+				{{panelSwitch}}
+				<div class="accordion">
+					<div ng-click="panelSwitch.setCurrent(0)" class="">ABC</div>				
+					<div class="{{panelSwitch.visibilityClass(0)}}">
+						ABC
+					</div>
+					<div ng-click="panelSwitch.setCurrent(1)">DEF</div>					
+					<div class="{{panelSwitch.visibilityClass(1)}}">
+						DEF	
+					</div>
+					<div ng-click="panelSwitch.setCurrent(2)">GHI</div>
+					<div class="{{panelSwitch.visibilityClass(2)}}">
+						GHI	
+					</div>
+				</div>
+				<div ng-repeat="selectedFbSearchParam in fbSearchParams" class="fb-param">
+					<button class="pull-left close-button btn action-btn" ng-click="deleteSearchParam(selectedFbSearchParam)">
+						<span class="glyphicon glyphicon-remove"></span>
+					</button>
+					<select ng-disabled="selectedFbSearchParam.model.selected" class="pull-left param-selector" ng-model="selectedFbSearchParam.criteria" ng-options="criteria.name for criteria in criterias"
 					ng-change="selectedFbSearchParam.model=selectedFbSearchParam.criteria.getSelectionModel()"
 					>
 					</select>
 					<div class="pull-left" ng-if="selectedFbSearchParam.criteria" ng-include src="'static/templates/selectors/'+selectedFbSearchParam.criteria.template">
 					</div>
-					<button ng-click="selectedFbSearchParam.model.selected=false" ng-show="selectedFbSearchParam.model.selected">Edit</button>
-					<button  ng-click="deleteSearchParam(selectedFbSearchParam)">Delete</button>
+					<button class="pull-left edit-button btn action-btn" ng-click="selectedFbSearchParam.model.selected=false" ng-show="selectedFbSearchParam.model.selected">
+					<span class="glyphicon glyphicon-pencil smaller-text"></span> Edit</button>
 					<div class="clearfix"></div>
 				</div>
 

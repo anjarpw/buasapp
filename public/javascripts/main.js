@@ -52,155 +52,184 @@ angular.module('buasApp', ["autocomplete","facebookService"])
     }
   };
 })
-.controller('MainController', ["$scope","facebookService","searchFormModel",
-  function($scope,facebookService,searchFormModel) {
+.service('Switch',function(){
+  return {
+    generateSwitch:function(){
+      return {
+        visibilityClass:function(key){
+          return key==this.currentKey?"switch-visible":"switch-hidden";
+        },
+        setCurrent:function(key){
+          this.currentKey=key;
+        },
+        currentKey:""
+      };
+    }
+  };
+})
+.service('SelectionModel',["searchFormModel","facebookService",function(searchFormModel,facebookService){
+
+  var searchLocationFunc=function(u){
+    return ["City","State","Country","County","Region", "Province","Region", "Government organization"].indexOf(u.category)>=0;
+  };  
+  return {
+    jobCriteriaModel:function(){
+      return {
+        searchModel:searchFormModel.generateSearchFormModel(facebookService,"page",100,20,searchLocationFunc),          
+        value:null,
+        selected:false,
+        onSearchItemSelected:function(newValue){
+          this.value=newValue;
+          this.selected=true;
+        },
+        compose:function(){
+          if(this.value){
+            var keyword="";
+            if(this.value.id){
+              keyword=this.value.id;
+            }else{
+              keyword="str/"+this.value+"/keywords_pages"
+            }
+              keyword+="/residents/past";
+              return keyword;                
+          }
+          return "";
+        }          
+      };
+    },    
+    liveInCriteriaModel:function(){
+      return {
+        searchModel:searchFormModel.generateSearchFormModel(facebookService,"page",100,20,searchLocationFunc),          
+        value:null,
+        selected:false,
+        onSearchItemSelected:function(newValue){
+          this.value=newValue;
+          this.selected=true;
+        },
+        compose:function(){
+          if(this.value){
+            var keyword="";
+            if(this.value.id){
+              keyword=this.value.id;
+            }else{
+              keyword="str/"+this.value+"/keywords_pages"
+            }
+              keyword+="/residents/present";
+              return keyword;                
+          }
+          return "";
+        }          
+      };
+    },
+    relationshipCriteriaModel:function(){
+      return {
+        value:"",
+        compose:function(){
+          return this.value+"/users";
+        }
+      };
+    },
+    ageCriteriaModel:function(){
+      var possibleAges=[];
+      for(i=0; i<=100; i++){
+        possibleAges.push(i);
+      }
+      return {
+        value:{from:0,to:65},
+        compose:function(){
+          return this.value.from+"/"+this.value.to+"/users-age-2";
+        },
+        possibleAges:possibleAges
+      };
+    },
+    genderCriteriaModel:function(){
+      return {
+        value:"",
+        compose:function(){
+          return this.value;
+        }
+      };
+    },
+    interestedInCriteriaModel:function(){
+      return {
+        value:"",
+        compose:function(){
+          return this.value+"/users-interested";
+        }
+      }
+    },
+    likeCriteriaModel:function(){
+      return {
+        searchModel:searchFormModel.generateSearchFormModel(facebookService,"page",20,20),
+        value:null,
+        selected:false,
+        onSearchItemSelected:function(newValue){
+          this.value=newValue;
+          this.selected=true;
+        },          
+        compose:function(){
+          if(this.value){
+            var keyword="";
+            if(this.value.id){
+              keyword=this.value.id;
+            }else{
+              keyword="str/"+this.value+"/keywords_pages"
+            }
+              keyword+="/likers";
+              return keyword;                
+          }
+          return "";
+        }          
+      };
+    }
+  };
+}])
+.controller('MainController', ["$scope","facebookService","searchFormModel","SelectionModel","Switch",
+  function($scope,facebookService,searchFormModel,SelectionModel,Switch) {
   facebookService.init(FB,'422013594638327');
   $scope.status="WAITING";
   $scope.authResponse=null;
 
-  var searchLocationFunc=function(u){
-    return ["City","State","Country","County","Region", "Province","Region", "Government organization"].indexOf(u.category)>=0;
-  };
+  $scope.panelSwitch=Switch.generateSwitch();
+
   $scope.criterias=[
     {
-      name:"Living in",      
+      name:"Live/Lived in",      
       template:'live.html',
-      getSelectionModel:function(){
-        return {
-          searchModel:searchFormModel.generateSearchFormModel(facebookService,"page",100,20,searchLocationFunc),          
-          value:null,
-          selected:false,
-          onSearchItemSelected:function(newValue){
-            this.value=newValue;
-            this.selected=true;
-          },
-          compose:function(){
-            if(this.value){
-              var keyword="";
-              if(this.value.id){
-                keyword=this.value.id;
-              }else{
-                keyword="str/"+this.value+"/keywords_pages"
-              }
-                keyword+="/residents/present";
-                return keyword;                
-            }
-            return "";
-          }          
-        };
-      }
+      getSelectionModel:SelectionModel.liveInCriteriaModel
     },
     {
-      name:"Lived in",
+      name:"Job",
       template:'live.html',
-      getSelectionModel:function(){
-        return {
-          searchModel:searchFormModel.generateSearchFormModel(facebookService,"page",100,20,searchLocationFunc),          
-          value:null,
-          selected:false,
-          onSearchItemSelected:function(newValue){
-            this.value=newValue;
-            this.selected=true;
-          },
-          compose:function(){
-            if(this.value){
-              var keyword="";
-              if(this.value.id){
-                keyword=this.value.id;
-              }else{
-                keyword="str/"+this.value+"/keywords_pages"
-              }
-                keyword+="/residents/past";
-                return keyword;                
-            }
-            return "";
-          }          
-        };
-      }
-    },
+      getSelectionModel:SelectionModel.jobCriteriaModel
+    },    
     {
       name:"Visited ",
     },    
     {
       name:"Relationship Status",
       template:'relationshipstatus.html',
-      getSelectionModel:function(){
-        return {
-          value:"",
-          compose:function(){
-            return this.value+"/users";
-          }
-        }
-      }
+      getSelectionModel:SelectionModel.relationshipCriteriaModel
     },    
     {
       name:"age between",
       template:'agebetween.html',
-      getSelectionModel:function(){
-        var possibleAges=[];
-        for(i=0; i<=100; i++){
-          possibleAges.push(i);
-        }
-        return {
-          value:{from:0,to:65},
-          compose:function(){
-            return this.value.from+"/"+this.value.to+"/users-age-2";
-          },
-          possibleAges:possibleAges
-        }
-      }
+      getSelectionModel:SelectionModel.ageCriteriaModel
     },    
     {
       name:"Gender",
       template:'gender.html',
-      getSelectionModel:function(){
-        return {
-          value:"",
-          compose:function(){
-            return this.value;
-          }
-        }
-      }
+      getSelectionModel:SelectionModel.genderCriteriaModel
     },    
     {
       name:"Interested in",
       template:'interestedin.html',
-      getSelectionModel:function(){
-        return {
-          value:"",
-          compose:function(){
-            return this.value+"/users-interested";
-          }
-        }
-      }
+      getSelectionModel:SelectionModel.interestedInCriteriaModel
     },    
     {
       name:"Like... ",
       template:'live.html',
-      getSelectionModel:function(){
-        return {
-          searchModel:searchFormModel.generateSearchFormModel(facebookService,"page",20,20),
-          value:null,
-          selected:false,
-          onSearchItemSelected:function(newValue){
-            this.value=newValue;
-            this.selected=true;
-          },          
-          compose:function(){
-            if(this.value){
-              var keyword="";
-              if(this.value.id){
-                keyword=this.value.id;
-              }else{
-                keyword="str/"+this.value+"/keywords_pages"
-              }
-                keyword+="/likers";
-                return keyword;                
-            }
-            return "";
-          }          
-        };
-      }
+      getSelectionModel:SelectionModel.likeCriteriaModel
     },    
     {
       name:"Commented... "
