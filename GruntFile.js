@@ -10,6 +10,7 @@ module.exports=function(grunt){
 				},
 				files: {
 	          		"public/all.css": "public/stylesheets/*.less" // destination file and source file
+	          		
 	      		}
 		  	}	  	
 		},

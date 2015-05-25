@@ -30,6 +30,7 @@ input:focus{
 @gray:#BBC;
 @grayDark:#99A;
 @grayLight:#EEF;
+@grayLightSuper:mix(@grayLight,white,50);
 @orange:#F90;
 
 .btn{
@@ -155,6 +156,12 @@ input:focus{
 			color:@grayDark;
 		}		
 	}
+	.criteria-name{
+		font-weight: bold;
+		line-height: 40px;
+		width: 150px;
+		margin-right: 10px;
+	}
 	.text-result{
 		line-height: 30px;
 		padding:0 10px;		
@@ -165,7 +172,7 @@ input:focus{
 	.param-selector{
 		margin-right: 10px;
 	}
-	.close-button{
+	.delete-button{
 		color:red;
 		margin-top:5px;
 		margin-right: 10px;
@@ -182,6 +189,16 @@ input:focus{
 		background: white;
 		&:hover{
 			background:@blue;
+			color:white;			
+		}		
+	}
+	.ignore-button{
+		color:red;
+		margin-top:5px;
+		margin-right: 10px;
+		background: white;
+		&:hover{
+			background:red;
 			color:white;			
 		}		
 	}
@@ -207,5 +224,60 @@ input:focus{
 	}
 	.switch-hidden{
 		visibility: collapse;
+	}
+}
+.btn-option{
+	.btn{
+		background:white;
+		line-height: 40px;
+		height: 40px;
+		color:@blueDark;
+		border:1px solid @gray;		
+		&.selected{
+			background:@blue;
+			color:white;
+		}
+		&:hover{
+			background:@grayLight;	
+		}
+	}
+}
+
+input[type=checkbox], input[type=radio] {
+  line-height: normal;
+  width: 16px;
+  margin:0px;
+  margin-right: 10px;
+}
+.gap-10px{
+	margin-right: 10px;
+}
+
+.fb-param.disabled{
+	color:@gray;
+	.selection{
+		opacity: 0.5;
+	}
+}
+.panel-default>.panel-heading {
+	color: black;
+	background-color: @grayLight;
+	border-color: @gray;
+}
+
+.shady{
+	background: @grayLightSuper;
+}
+
+.accordion .panel-default>.panel-heading {
+	padding:0;
+	a{
+		padding:10px 15px;
+		display: block;
+		background:@grayLightSuper;
+		text-decoration: none;
+		&:hover{
+			background:@grayLight;
+		}
 	}
 }

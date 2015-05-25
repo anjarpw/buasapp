@@ -8,7 +8,8 @@ angular.module('autocomplete', [])
       model:'=',
       onChange:'&',
       onSelected:'&',
-      id:"="
+      id:"=",
+      disabled:"="
     },
     link:function(scope,element,attr){
       var e=$(angular.element(element));
@@ -111,7 +112,8 @@ angular.module('autocomplete', [])
     scope:{
       model:'=',
       onChange:'&',
-      onSelected:'&'
+      onSelected:'&',
+      disabled:"="
     },
     link:function(scope){
       scope.handleOnChange=function(keyword,callback){
@@ -138,7 +140,8 @@ angular.module('autocomplete', [])
     scope:{
       model:'=',
       onChange:'&',
-      onSelected:'&'
+      onSelected:'&',
+      disabled:"="
     },
     link:function(scope){
       scope.handleOnChange=function(keyword,callback){
@@ -320,7 +323,39 @@ angular.module('facebookService', [])
       }
     };
 }]);;
-angular.module('buasApp', ["autocomplete","facebookService"])
+angular.module('buasApp', ["facebookService","ui.bootstrap","searchPeopleController"])
+.controller('MainController', ["$scope","facebookService",
+  function($scope,facebookService) {
+  facebookService.init(FB,'422013594638327');
+  $scope.status="WAITING";
+  $scope.authResponse=null;
+  var handleLogin=function(response){
+      $scope.authResponse=response.authResponse;
+      $scope.status="LOGGED IN";
+  };
+  $scope.login=function(){
+    var deferred = facebookService.doLogin();
+    deferred.promise.then(handleLogin);    
+  };
+  $scope.setViewMode=function(viewMode){
+    $scope.activeViewMode=viewMode;
+  }
+  $scope.checkLogin=function(){
+    var deferred = facebookService.checkLoginStatus();
+    deferred.promise.then(handleLogin,function(response){
+      $scope.authResponse=null;
+      $scope.status="LOGGED IN REJECTED";
+    });
+  };
+
+  $scope.viewModes=["PEOPLE","PAGES","PLACES","EVENTS","APPS","GROUPS","PHOTOS"];
+  $scope.activeViewMode=$scope.viewModes[0];
+}])
+;
+
+
+;
+angular.module('searchFormModel', [])
 .service("searchFormModel",function(){
   return {
     generateSearchFormModel:function(facebookService, type, queryLimit, showLimit, filter){
@@ -340,6 +375,7 @@ angular.module('buasApp', ["autocomplete","facebookService"])
             this.httpDeferredRequests=[];
           },
           populate:function(keyword, callback){
+            var clearedKeyword=keyword;
             var obj={
               type:this.type,
               q:keyword,
@@ -373,77 +409,134 @@ angular.module('buasApp', ["autocomplete","facebookService"])
       };     
     }
   };
-})
-.service('Switch',function(){
-  return {
-    generateSwitch:function(){
-      return {
-        visibilityClass:function(key){
-          return key==this.currentKey?"switch-visible":"switch-hidden";
-        },
-        setCurrent:function(key){
-          this.currentKey=key;
-        },
-        currentKey:""
-      };
+});
+angular.module('searchPeopleController', ["autocomplete","selectionModel"])
+.controller('searchPeopleController', ["$scope","peopleSelectionModel", "pageSelectionModel",
+  function($scope,PeopleSelectionModel,PageSelectionModel) {
+
+    var locationBasedSearch=function(u){
+        var categories=["City","State/province/region","Country","Government Organization"];
+        var categoryTypes=["City","State","Province","Region","Country","Government Organization"];
+        if(u.category && categories.indexOf(u.category)>=0){
+            return true;
+        }
+        if(u.category_list && u.category_list.length>0 && categoryTypes.indexOf(u.category_list[0])>=0){
+            return true;
+        }
+        return false;
     }
-  };
-})
-.service('SelectionModel',["searchFormModel","facebookService",function(searchFormModel,facebookService){
+    $scope.basicCriterias=[   
+      {
+        name:"Age between",
+        template:'agebetween.html',
+        ignored:false,
+        selection:PeopleSelectionModel.getAgeSelectionModel()
+      },    
+      {
+        name:"Gender",
+        template:'gender.html',
+        ignored:false,
+        selection:PeopleSelectionModel.getGenderSelectionModel()
+      },    
+      {
+        name:"Interested in",
+        template:'interestedin.html',
+        ignored:false,
+        selection:PeopleSelectionModel.getInterestedInSelectionModel()
+      },    
+      {
+        name:"Religious view",
+        template:'page.html',
+        ignored:false,
+        selected:false,
+        selection:PageSelectionModel.generateGetSearchSelectionModel("/users-religious-view","page")()
+      },       
+    ];
+
+    var livingCriteria={
+        name:"Living",
+        template:'page.html',
+        ignored:false,
+        selected:false,
+        selection:PageSelectionModel.generateGetSearchSelectionModel("/residents/present","page",locationBasedSearch)()
+    };
+    var likersCriteria={
+        name:"Likes",
+        template:'page.html',
+        ignored:false,
+        selected:false,
+        selection:PageSelectionModel.generateGetSearchSelectionModel("/likers", "page")()
+    };
+    var commentersCriteria={
+        name:"Commented on",
+        template:'page.html',
+        ignored:false,
+        selected:false,
+        selection:PageSelectionModel.generateGetSearchSelectionModel("/commmenters","page")()
+    };
+    var groupsCriteria={
+        name:"Group Member of",
+        template:'page.html',
+        ignored:false,
+        selected:false,
+        selection:PageSelectionModel.generateGetSearchSelectionModel("/members","group")()
+    };
+    $scope.extendedCriterias=[
+        livingCriteria,
+        likersCriteria,
+        commentersCriteria,
+        groupsCriteria
+    ];   
+    $scope.isBasicInfoOpen=true;
+    $scope.expandSelection=function(){
+        $scope.expandedMode=true;
+    }
+    $scope.collapseSelection=function(){
+        $scope.expandedMode=false;
+    }
+  }
+]);
+
+
+;
+angular.module('selectionModel', ["searchFormModel","facebookService"])
+.service('pageSelectionModel',["searchFormModel","facebookService",function(searchFormModel,facebookService){
+  return {
+    generateGetSearchSelectionModel:function(suffix,queryType,filterFunc){
+      return function(){
+        return {
+          searchModel:searchFormModel.generateSearchFormModel(facebookService,queryType,20,20,filterFunc),
+          value:null,
+          selected:false,
+          onSearchItemSelected:function(newValue){
+            this.value=newValue;
+            this.selected=true;
+          },          
+          compose:function(){
+            if(this.value){
+              var keyword="";
+              if(this.value.id){
+                keyword=this.value.id;
+              }else{
+                keyword="str/"+this.value+"/keywords_pages"
+              }
+                keyword+=suffix;
+                return keyword;                
+            }
+            return "";
+          }          
+        };        
+      }
+    }    
+  }
+}])
+.service('peopleSelectionModel',["searchFormModel","facebookService",function(searchFormModel,facebookService){
 
   var searchLocationFunc=function(u){
     return ["City","State","Country","County","Region", "Province","Region", "Government organization"].indexOf(u.category)>=0;
   };  
   return {
-    jobCriteriaModel:function(){
-      return {
-        searchModel:searchFormModel.generateSearchFormModel(facebookService,"page",100,20,searchLocationFunc),          
-        value:null,
-        selected:false,
-        onSearchItemSelected:function(newValue){
-          this.value=newValue;
-          this.selected=true;
-        },
-        compose:function(){
-          if(this.value){
-            var keyword="";
-            if(this.value.id){
-              keyword=this.value.id;
-            }else{
-              keyword="str/"+this.value+"/keywords_pages"
-            }
-              keyword+="/residents/past";
-              return keyword;                
-          }
-          return "";
-        }          
-      };
-    },    
-    liveInCriteriaModel:function(){
-      return {
-        searchModel:searchFormModel.generateSearchFormModel(facebookService,"page",100,20,searchLocationFunc),          
-        value:null,
-        selected:false,
-        onSearchItemSelected:function(newValue){
-          this.value=newValue;
-          this.selected=true;
-        },
-        compose:function(){
-          if(this.value){
-            var keyword="";
-            if(this.value.id){
-              keyword=this.value.id;
-            }else{
-              keyword="str/"+this.value+"/keywords_pages"
-            }
-              keyword+="/residents/present";
-              return keyword;                
-          }
-          return "";
-        }          
-      };
-    },
-    relationshipCriteriaModel:function(){
+    getRelationshipSelectionModel:function(){
       return {
         value:"",
         compose:function(){
@@ -451,7 +544,7 @@ angular.module('buasApp', ["autocomplete","facebookService"])
         }
       };
     },
-    ageCriteriaModel:function(){
+    getAgeSelectionModel:function(){
       var possibleAges=[];
       for(i=0; i<=100; i++){
         possibleAges.push(i);
@@ -464,7 +557,7 @@ angular.module('buasApp', ["autocomplete","facebookService"])
         possibleAges:possibleAges
       };
     },
-    genderCriteriaModel:function(){
+    getGenderSelectionModel:function(){
       return {
         value:"",
         compose:function(){
@@ -472,135 +565,13 @@ angular.module('buasApp', ["autocomplete","facebookService"])
         }
       };
     },
-    interestedInCriteriaModel:function(){
+    getInterestedInSelectionModel:function(){
       return {
-        value:"",
+        value:"both",
         compose:function(){
           return this.value+"/users-interested";
         }
       }
-    },
-    likeCriteriaModel:function(){
-      return {
-        searchModel:searchFormModel.generateSearchFormModel(facebookService,"page",20,20),
-        value:null,
-        selected:false,
-        onSearchItemSelected:function(newValue){
-          this.value=newValue;
-          this.selected=true;
-        },          
-        compose:function(){
-          if(this.value){
-            var keyword="";
-            if(this.value.id){
-              keyword=this.value.id;
-            }else{
-              keyword="str/"+this.value+"/keywords_pages"
-            }
-              keyword+="/likers";
-              return keyword;                
-          }
-          return "";
-        }          
-      };
     }
   };
 }])
-.controller('MainController', ["$scope","facebookService","searchFormModel","SelectionModel","Switch",
-  function($scope,facebookService,searchFormModel,SelectionModel,Switch) {
-  facebookService.init(FB,'422013594638327');
-  $scope.status="WAITING";
-  $scope.authResponse=null;
-
-  $scope.panelSwitch=Switch.generateSwitch();
-
-  $scope.criterias=[
-    {
-      name:"Live/Lived in",      
-      template:'live.html',
-      getSelectionModel:SelectionModel.liveInCriteriaModel
-    },
-    {
-      name:"Job",
-      template:'live.html',
-      getSelectionModel:SelectionModel.jobCriteriaModel
-    },    
-    {
-      name:"Visited ",
-    },    
-    {
-      name:"Relationship Status",
-      template:'relationshipstatus.html',
-      getSelectionModel:SelectionModel.relationshipCriteriaModel
-    },    
-    {
-      name:"age between",
-      template:'agebetween.html',
-      getSelectionModel:SelectionModel.ageCriteriaModel
-    },    
-    {
-      name:"Gender",
-      template:'gender.html',
-      getSelectionModel:SelectionModel.genderCriteriaModel
-    },    
-    {
-      name:"Interested in",
-      template:'interestedin.html',
-      getSelectionModel:SelectionModel.interestedInCriteriaModel
-    },    
-    {
-      name:"Like... ",
-      template:'live.html',
-      getSelectionModel:SelectionModel.likeCriteriaModel
-    },    
-    {
-      name:"Commented... "
-    },    
-  ]
-  $scope.deleteSearchParam=function(searchParam){
-    var index=$scope.fbSearchParams.indexOf(searchParam);
-    if (index > -1) {
-      $scope.fbSearchParams.splice(index, 1);
-    }
-  };
-  $scope.fbSearchParams=[];
-  $scope.addFbParam=function(){
-    var obj = {
-      criteria:null,
-      model:null,
-    };
-    $scope.fbSearchParams.push(obj);
-  }
-  $scope.addFbParam();
-  var handleLogin=function(response){
-      $scope.authResponse=response.authResponse;
-      $scope.status="LOGGED IN";
-  };
-  $scope.login=function(){
-    var deferred = facebookService.doLogin();
-    deferred.promise.then(handleLogin);    
-  };
-  $scope.setViewMode=function(viewMode){
-    $scope.activeViewMode=viewMode;
-  }
-  $scope.checkLogin=function(){
-    var deferred = facebookService.checkLoginStatus();
-    deferred.promise.then(handleLogin,function(response){
-      $scope.authResponse=null;
-      $scope.status="LOGGED IN REJECTED";
-    });
-  };
-  $scope.arrangePath=function(){
-    var searchPath="";
-    $scope.fbSearchParams.forEach(function(u){
-      searchPath+=u.model.compose()+"/";
-    });
-    searchPath+="intersect";
-    $scope.searchPath=searchPath;
-  };
-  $scope.viewModes=["PEOPLE","PAGES","PLACES","EVENTS","APPS","GROUPS","PHOTOS"];
-  $scope.activeViewMode=$scope.viewModes[0];
-}])
-;
-
-

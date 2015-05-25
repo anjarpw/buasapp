@@ -1,15 +1,15 @@
-<select ng-model="$parent.selectedFbSearchParam.model.value.from">
+<select ng-model="$parent.criteria.selection.value.from">
 	<option 
-		ng-repeat="age in $parent.selectedFbSearchParam.model.possibleAges" 
-		ng-show="age<=$parent.selectedFbSearchParam.model.value.to" 
+		ng-repeat="age in $parent.criteria.selection.possibleAges" 
+		ng-show="age<=$parent.criteria.selection.value.to" 
 		ng-value="age">
 		{{age}}
 	</option>
 </select>
-<select ng-model="$parent.selectedFbSearchParam.model.value.to">
+<select ng-model="$parent.criteria.selection.value.to">
 	<option 
-		ng-show="age>=$parent.selectedFbSearchParam.model.value.from"	
-		ng-repeat="age in $parent.selectedFbSearchParam.model.possibleAges" 
+		ng-show="age>=$parent.criteria.selection.value.from"	
+		ng-repeat="age in $parent.criteria.selection.possibleAges" 
 		ng-value="age">
 		{{age}}
 	</option>

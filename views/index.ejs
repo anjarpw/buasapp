@@ -2,12 +2,16 @@
 	<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>
 	<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
 	<script src="//connect.facebook.net/en_US/sdk.js"></script>
-	<script src="/static/all.js"></script>
+	<script src="/static/all.js"></script>	
+	<script src="/static/lib/ui.bootstrap.js"></script>	
 	<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
 	<link rel="stylesheet" href="static/all.css">
 </head>
 <body ng-app="buasApp" ng-controller="MainController">
-	<div class="container">
+	<div ng-show="!authResponse">
+		<a ng-click="login()">LOGIN</a>
+	</div>
+	<div  ng-init="checkLogin()" class="container">
 		<div class="btn-group all-btn pull-right">
 			<button type="button" class="btn" ng-click="setViewMode('ALL')" 
 			ng-class="'ALL'==activeViewMode?['selected','btn']:['btn']">ALL</button>
@@ -17,71 +21,8 @@
 			ng-class="viewMode==activeViewMode?['selected','btn']:['btn']">{{viewMode}}</button>
 		</div>
 		<div class="clearfix"></div>
-		<div class="panel panel-default">
-			<div class="panel-body">
-				<div ng-init="checkLogin()">
-					<h1>BUAS GRABH</h1>
-					<h2>Graph Search With Grabber</h2>
-					<div>{{status}}</div>		
-				</div>
-				<div ng-show="!authResponse">
-					<a ng-click="login()">LOGIN</a>
-				</div>
-				{{panelSwitch}}
-				<div class="accordion">
-					<div ng-click="panelSwitch.setCurrent(0)" class="">ABC</div>				
-					<div class="{{panelSwitch.visibilityClass(0)}}">
-						ABC
-					</div>
-					<div ng-click="panelSwitch.setCurrent(1)">DEF</div>					
-					<div class="{{panelSwitch.visibilityClass(1)}}">
-						DEF	
-					</div>
-					<div ng-click="panelSwitch.setCurrent(2)">GHI</div>
-					<div class="{{panelSwitch.visibilityClass(2)}}">
-						GHI	
-					</div>
-				</div>
-				<div ng-repeat="selectedFbSearchParam in fbSearchParams" class="fb-param">
-					<button class="pull-left close-button btn action-btn" ng-click="deleteSearchParam(selectedFbSearchParam)">
-						<span class="glyphicon glyphicon-remove"></span>
-					</button>
-					<select ng-disabled="selectedFbSearchParam.model.selected" class="pull-left param-selector" ng-model="selectedFbSearchParam.criteria" ng-options="criteria.name for criteria in criterias"
-					ng-change="selectedFbSearchParam.model=selectedFbSearchParam.criteria.getSelectionModel()"
-					>
-					</select>
-					<div class="pull-left" ng-if="selectedFbSearchParam.criteria" ng-include src="'static/templates/selectors/'+selectedFbSearchParam.criteria.template">
-					</div>
-					<button class="pull-left edit-button btn action-btn" ng-click="selectedFbSearchParam.model.selected=false" ng-show="selectedFbSearchParam.model.selected">
-					<span class="glyphicon glyphicon-pencil smaller-text"></span> Edit</button>
-					<div class="clearfix"></div>
-				</div>
-
-				<button ng-click="addFbParam()">Add</button>
-				{{searchPath}}
-				<button ng-click="arrangePath()">GET PATH</button>
-<!-- 				<div>
-					<span>visitor</span>
-					<autocomplete-fb-page class="inline" model="searchPlaceModel.model" on-change="searchPlaceModel.populate($keyword,$callback)" on-selected="searchPlaceModel.onSelected()">
-					</autocomplete-fb-page>
-					<br/>
-					/{{searchPlaceModel.model.id}}/visitors
-				</div>
-				<div>
-					<span>likers</span>
-					<autocomplete-fb-page class="inline" model="searchPageModel.model" on-change="searchPageModel.populate($keyword,$callback)" on-selected="searchPageModel.onSelected()">
-					</autocomplete-fb-page>
-					<br/>
-					/{{searchPageModel.model.id}}/likers
-				</div>
-				<div>
-					<span>lives in</span>
-					<autocomplete-fb-page  model="searchLocationModel.model" on-change="searchLocationModel.populate($keyword,$callback)" on-selected="searchLocationModel.onSelected()">
-					</autocomplete-fb-page>				
-					<br/>
-					/{{searchLocationModel.model.id}}/residents/present/
-				</div> -->
-			</div>
-		</div>
+		<div ng-include src="'static/templates/searchPeoplePanel.html'" ng-controller="searchPeopleController" ng-show="activeViewMode=='PEOPLE'">			
+		</div> 
+	</div>
 
 </body>

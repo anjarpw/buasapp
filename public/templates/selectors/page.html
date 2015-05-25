@@ -1,0 +1,19 @@
+<div >
+	<autocomplete-fb-page disabled="$parent.criteria.ignored" ng-show="!$parent.criteria.selection.selected" 
+		model="$parent.criteria.selection.searchModel.model" 
+		on-change="$parent.criteria.selection.searchModel.populate($keyword,$callback)" 
+		on-selected="$parent.criteria.selection.onSearchItemSelected($newValue,$oldValue)">
+	</autocomplete-fb-page>
+	<div ng-show="$parent.criteria.selection.selected">
+		<div class="selected-icon" ng-show="$parent.criteria.selection.value.id">
+			<img ng-src="//graph.facebook.com/{{$parent.criteria.selection.value.id}}/picture/" width="30" height="30" class="pull-left">
+			<div class="pull-left text-result">
+				{{$parent.criteria.selection.value.name}}			
+			</div>
+			<div class="clearfix"></div>			
+		</div>
+		<div  ng-show="$parent.criteria.selection.value.id==undefined" class="selected-icon keyword">
+			{{$parent.criteria.selection.value}}	
+		</div>
+	</div>
+</div>

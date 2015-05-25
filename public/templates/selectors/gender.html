@@ -1,5 +1,11 @@
-<select ng-model="$parent.selectedFbSearchParam.model.value">
-	<option value="males">Male</option>
-	<option value="females">Female</option>
-	<option value="">All</option>
-</select>
+<div class="btn-group pull-left btn-option">
+	<button type="button" ng-class="$parent.criteria.selection.value=='males'?['selected','btn']:['btn']"  ng-click="$parent.criteria.selection.value='males'">
+		Males
+	</button>
+	<button type="button" ng-class="$parent.criteria.selection.value=='females'?['selected','btn']:['btn']" ng-click="$parent.criteria.selection.value='females'">
+		Females
+	</button>
+	<button type="button" ng-class="$parent.criteria.selection.value==''?['selected','btn']:['btn']" ng-click="$parent.criteria.selection.value=''">
+		All
+	</button>
+</div>

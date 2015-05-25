@@ -1,0 +1,76 @@
+<div class="panel panel-default" ng-show="!expandedMode">
+	<div class="panel-body shady">
+		<div ng-repeat="criteria in basicCriterias" class="fb-param {{criteria.ignored?'disabled':''}}">
+			<input type="checkbox" class="pull-left" ng-model="criteria.ignored"  ng-true-value="false" ng-false-value="true"/>
+			<div class="pull-left criteria-name">
+				{{criteria.name}}
+			</div>
+			<div class="pull-left selection" ng-include src="'static/templates/selectors/'+criteria.template">
+			</div>
+			<button class="pull-left edit-button btn action-btn gap-10px" ng-click="criteria.selection.selected=false" ng-show="criteria.selection.selected" ng-disabled="criteria.ignored">
+				<span class="glyphicon glyphicon-pencil smaller-text"></span> Edit
+			</button>		
+			<div class="clearfix"></div>
+		</div>
+
+	</div>
+	<div class="panel-body">
+		<div ng-repeat="criteria in extendedCriterias" class="fb-param {{criteria.ignored?'disabled':''}}">
+			<input type="checkbox" class="pull-left" ng-model="criteria.ignored"  ng-true-value="false" ng-false-value="true"/>
+			<div class="pull-left criteria-name">
+				{{criteria.name}}
+			</div>
+			<div class="pull-left selection" ng-include src="'static/templates/selectors/'+criteria.template">
+			</div>
+			<button class="pull-left edit-button btn action-btn gap-10px" ng-click="criteria.selection.selected=false" ng-show="criteria.selection.selected" ng-disabled="criteria.ignored">
+				<span class="glyphicon glyphicon-pencil smaller-text"></span> Edit
+			</button>		
+			<div class="clearfix"></div>
+		</div>		
+	</div>
+</div>
+
+<accordion close-others="true" ng-show="expandedMode" class="accordion">
+	<accordion-group heading="BASIC INFO" is-open="isBasicInfoOpen">
+		<div ng-repeat="criteria in basicCriterias" class="fb-param {{criteria.ignored?'disabled':''}}">
+			<input type="checkbox" class="pull-left" ng-model="criteria.ignored"  ng-true-value="false" ng-false-value="true"/>
+			<div class="pull-left criteria-name">
+				{{criteria.name}}
+			</div>
+			<div class="pull-left selection" ng-include src="'static/templates/selectors/'+criteria.template">
+			</div>
+			<button class="pull-left edit-button btn action-btn gap-10px" ng-click="criteria.selection.selected=false" ng-show="criteria.selection.selected" ng-disabled="criteria.ignored">
+				<span class="glyphicon glyphicon-pencil smaller-text"></span> Edit
+			</button>		
+			<div class="clearfix"></div>
+		</div>
+	</accordion-group>
+	<accordion-group heading="INTEREST, LIKES, VIEWS">
+	</accordion-group>
+	<accordion-group heading="PLACE">
+<!-- 		<div ng-repeat="criteria in basicCriterias" class="fb-param">
+			<button class="pull-left close-button btn action-btn" ng-click="deleteSearchParam(basicCriterias,criteria)">
+				<span class="glyphicon glyphicon-remove"></span>
+			</button>
+			<select ng-disabled="criteria.model.selected" class="pull-left param-selector" ng-model="criteria.criteria" ng-options="criteria.name for criteria in criterias"
+			ng-change="criteria.model=criteria.criteria.getSelectionModel()"
+			>
+			</select>
+			<div class="pull-left" ng-if="criteria.criteria" ng-include src="'static/templates/selectors/'+criteria.criteria.template">
+			</div>
+			<div class="clearfix"></div>
+		</div> -->
+	</accordion-group>
+	<accordion-group heading="CONNECTION & RELATION">
+		This content is straight in the template.
+	</accordion-group>
+	<accordion-group heading="EDUCATION">
+		This content is straight in the template.
+	</accordion-group>			
+	<accordion-group heading="WORKS">
+		This content is straight in the template.
+	</accordion-group>			
+</accordion>	
+<a ng-click="expandSelection()" ng-show="!expandedMode">MORE...</a>
+<a ng-click="collapseSelection()" ng-show="expandedMode">LESS...</a>
+{{basicInfoIsOpen}}
