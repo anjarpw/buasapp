@@ -156,10 +156,14 @@ input:focus{
 			color:@grayDark;
 		}		
 	}
+	select{
+		width: 160px;
+	}
+
 	.criteria-name{
 		font-weight: bold;
 		line-height: 40px;
-		width: 150px;
+		width: 160px;
 		margin-right: 10px;
 	}
 	.text-result{
@@ -205,26 +209,31 @@ input:focus{
 	.selected-icon{
 		background: @grayLight;
 		padding: 5px;
-		margin-right: 10px;
 	}
 	.keyword{
 		line-height: 30px;
 		padding:5px 15px;
 		font-style: italic;
-		margin-right: 10px;		
+	}
+	.criteria-name.bordered{
+		padding-left: 15px;
+		border:1px solid @gray;
+	}	
+}
+.new-button{
+	color:white;
+	margin-top:5px;
+	margin-right: 10px;
+	background: green;
+	&:hover{
+		color:white;
+		background:mix(green,white,80);			
 	}
 }
 
+
 .smaller-text{
 	font-size:0.8em;
-}
-.accordion{
-	.switch-visible{
-		visibility: visible;
-	}
-	.switch-hidden{
-		visibility: collapse;
-	}
 }
 .btn-option{
 	.btn{
@@ -268,16 +277,49 @@ input[type=checkbox], input[type=radio] {
 .shady{
 	background: @grayLightSuper;
 }
+.panel-default {
+  border-color: @gray;
+}
+.tabset{
+    .nav-stacked{
+        width:60px;
+        li{
+            margin-right:-2px;
+            border-radius:0;
+            a{
+                padding:0px;
+                height:60px;
+                border-radius: 5px 0 0 5px;
+                overflow:hidden;
+                background:@grayLight;
+                .icon-button{
+                    padding:15px;
+                    font-size:30px;
+                    line-height:30px;
+                }
+            }
+        }
+        li.active, li:active{
+            margin-right:-3px;
+            a{
+                background:white;
+                border: 1px solid @gray;
+                border-right: none;
+            }
+        }
+        float:left;
+    }
+    .tab-content{
+        border-radius:0 5px 5px 0;
+        height:400px;
+        width:~'calc(100% - 60px)';
+        float:left;
+        background:white;
+        border:1px solid @gray;
+        padding:20px;
+    }
+    .tab-content::after{
+        clear:both;
 
-.accordion .panel-default>.panel-heading {
-	padding:0;
-	a{
-		padding:10px 15px;
-		display: block;
-		background:@grayLightSuper;
-		text-decoration: none;
-		&:hover{
-			background:@grayLight;
-		}
-	}
+    }
 }

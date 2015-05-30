@@ -8,7 +8,8 @@ angular.module('autocomplete', [])
       model:'=',
       onChange:'&',
       onSelected:'&',
-      id:"="
+      id:"=",
+      disabled:"="
     },
     link:function(scope,element,attr){
       var e=$(angular.element(element));
@@ -89,8 +90,9 @@ angular.module('autocomplete', [])
             $newValue:scope.model,
             $oldValue:oldValue
           });
-        }
-        scope.reset();
+        }        
+        scope.populatedItems=[];
+        scope.showSearch=false;
       };
       scope.reset=function(){
         scope.caret=-1;
@@ -111,7 +113,8 @@ angular.module('autocomplete', [])
     scope:{
       model:'=',
       onChange:'&',
-      onSelected:'&'
+      onSelected:'&',
+      disabled:"="
     },
     link:function(scope){
       scope.handleOnChange=function(keyword,callback){
@@ -138,7 +141,8 @@ angular.module('autocomplete', [])
     scope:{
       model:'=',
       onChange:'&',
-      onSelected:'&'
+      onSelected:'&',
+      disabled:"="
     },
     link:function(scope){
       scope.handleOnChange=function(keyword,callback){

@@ -11,6 +11,7 @@ angular.module('searchFormModel', [])
           queryLimit:queryLimit,
           showLimit:showLimit,
           httpDeferredRequests:[],
+          lastKeyword:"",
           cancelPreviousRequest:function(){
             this.httpDeferredRequests.forEach(function(req){
               req.reject();
@@ -18,6 +19,7 @@ angular.module('searchFormModel', [])
             this.httpDeferredRequests=[];
           },
           populate:function(keyword, callback){
+            this.lastKeyword=keyword;
             var clearedKeyword=keyword;
             var obj={
               type:this.type,

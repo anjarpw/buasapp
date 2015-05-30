@@ -1,0 +1,35 @@
+<div>
+	<div class="pull-left gap-10px">
+		<autocomplete-fb-page disabled="$parent.criteria.ignored" ng-show="!$parent.criteria.selection.selected" 
+			model="$parent.criteria.selection.searchModel.model" 
+			on-change="$parent.criteria.selection.searchModel.populate($keyword,$callback)" 
+			on-selected="$parent.criteria.selection.onSearchItemSelected($newValue,$oldValue)">
+		</autocomplete-fb-page>
+		<div ng-show="$parent.criteria.selection.selected">
+			<div class="selected-icon" ng-show="$parent.criteria.selection.value.id">
+				<img ng-src="//graph.facebook.com/{{$parent.criteria.selection.value.id}}/picture/" width="30" height="30" class="pull-left">
+				<div class="pull-left text-result">
+					{{$parent.criteria.selection.value.name}}			
+				</div>
+				<div class="clearfix"></div>			
+			</div>
+			<div  ng-show="$parent.criteria.selection.value.id==undefined" class="selected-icon keyword">
+				<b>keyword: </b>{{$parent.criteria.selection.value}}	
+			</div>
+		</div>
+	</div>
+	<div class="btn-group pull-left btn-option pull-left">
+		<button type="button" ng-class="$parent.criteria.selection.value=='males'?['selected','btn']:['btn']">
+			Anytime
+		</button>
+		<button type="button" ng-class="$parent.criteria.selection.value=='males'?['selected','btn']:['btn']">
+			Present
+		</button>
+		<button type="button" ng-class="$parent.criteria.selection.value=='females'?['selected','btn']:['btn']">
+			Past
+		</button>
+		<button type="button" ng-class="$parent.criteria.selection.value==''?['selected','btn']:['btn']">
+			Advanced...
+		</button>
+	</div>
+</div>

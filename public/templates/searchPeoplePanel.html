@@ -5,7 +5,7 @@
 			<div class="pull-left criteria-name">
 				{{criteria.name}}
 			</div>
-			<div class="pull-left selection" ng-include src="'static/templates/selectors/'+criteria.template">
+			<div class="pull-left selection gap-10px" ng-include src="'static/templates/selectors/'+criteria.template">
 			</div>
 			<button class="pull-left edit-button btn action-btn gap-10px" ng-click="criteria.selection.selected=false" ng-show="criteria.selection.selected" ng-disabled="criteria.ignored">
 				<span class="glyphicon glyphicon-pencil smaller-text"></span> Edit
@@ -20,7 +20,7 @@
 			<div class="pull-left criteria-name">
 				{{criteria.name}}
 			</div>
-			<div class="pull-left selection" ng-include src="'static/templates/selectors/'+criteria.template">
+			<div class="pull-left selection gap-10px" ng-include src="'static/templates/selectors/'+criteria.template">
 			</div>
 			<button class="pull-left edit-button btn action-btn gap-10px" ng-click="criteria.selection.selected=false" ng-show="criteria.selection.selected" ng-disabled="criteria.ignored">
 				<span class="glyphicon glyphicon-pencil smaller-text"></span> Edit
@@ -29,48 +29,121 @@
 		</div>		
 	</div>
 </div>
-
-<accordion close-others="true" ng-show="expandedMode" class="accordion">
-	<accordion-group heading="BASIC INFO" is-open="isBasicInfoOpen">
-		<div ng-repeat="criteria in basicCriterias" class="fb-param {{criteria.ignored?'disabled':''}}">
-			<input type="checkbox" class="pull-left" ng-model="criteria.ignored"  ng-true-value="false" ng-false-value="true"/>
-			<div class="pull-left criteria-name">
-				{{criteria.name}}
-			</div>
-			<div class="pull-left selection" ng-include src="'static/templates/selectors/'+criteria.template">
-			</div>
-			<button class="pull-left edit-button btn action-btn gap-10px" ng-click="criteria.selection.selected=false" ng-show="criteria.selection.selected" ng-disabled="criteria.ignored">
-				<span class="glyphicon glyphicon-pencil smaller-text"></span> Edit
-			</button>		
-			<div class="clearfix"></div>
-		</div>
-	</accordion-group>
-	<accordion-group heading="INTEREST, LIKES, VIEWS">
-	</accordion-group>
-	<accordion-group heading="PLACE">
-<!-- 		<div ng-repeat="criteria in basicCriterias" class="fb-param">
-			<button class="pull-left close-button btn action-btn" ng-click="deleteSearchParam(basicCriterias,criteria)">
-				<span class="glyphicon glyphicon-remove"></span>
-			</button>
-			<select ng-disabled="criteria.model.selected" class="pull-left param-selector" ng-model="criteria.criteria" ng-options="criteria.name for criteria in criterias"
-			ng-change="criteria.model=criteria.criteria.getSelectionModel()"
-			>
-			</select>
-			<div class="pull-left" ng-if="criteria.criteria" ng-include src="'static/templates/selectors/'+criteria.criteria.template">
-			</div>
-			<div class="clearfix"></div>
-		</div> -->
-	</accordion-group>
-	<accordion-group heading="CONNECTION & RELATION">
-		This content is straight in the template.
-	</accordion-group>
-	<accordion-group heading="EDUCATION">
-		This content is straight in the template.
-	</accordion-group>			
-	<accordion-group heading="WORKS">
-		This content is straight in the template.
-	</accordion-group>			
-</accordion>	
+<tabset ng-show="expandedMode" class="tabset" vertical="true">
+    <tab>
+        <tab-heading>
+            <span class="icon-button glyphicon glyphicon-user"></span>
+        </tab-heading>
+        <div ng-repeat="criteria in basicCriterias" class="fb-param {{criteria.ignored?'disabled':''}}">
+            <input type="checkbox" class="pull-left" ng-model="criteria.ignored" ng-true-value="false" ng-false-value="true"/>
+            <div class="pull-left criteria-name">
+                {{criteria.name}}
+            </div>
+            <div class="pull-left selection gap-10px" ng-include src="'static/templates/selectors/'+criteria.template">
+            </div>
+            <button class="pull-left edit-button btn action-btn gap-10px" ng-click="criteria.selection.selected=false" ng-show="criteria.selection.selected" ng-disabled="criteria.ignored">
+                <span class="glyphicon glyphicon-pencil smaller-text"></span> Edit
+            </button>
+            <div class="clearfix"></div>
+        </div>
+    </tab>
+    <tab>
+        <tab-heading>
+            <span class="icon-button glyphicon glyphicon-heart"></span>
+        </tab-heading>
+        <div ng-repeat="criteria in interestCriterias" class="fb-param {{criteria.ignored?'disabled':''}}">
+            <input type="checkbox" ng-model="criteria.ignored" ng-disabled="!criteria.selection" class="pull-left" ng-true-value="false" ng-false-value="true" />
+            <div class="pull-left criteria-name bordered" ng-if="!criteria.deletable">
+                {{criteria.name}}
+            </div>
+            <select class="gap-10px pull-left" ng-disabled="criteria.ignored" ng-if="criteria.deletable" ng-model="criteria.clone" ng-change="clone(criteria)" ng-options="selector.name for selector in interestCriteriaDropdownSelector"  ng-init="initClone(interestCriteriaDropdownSelector,criteria)"></select>
+            <div class="pull-left selection gap-10px" ng-include src="'static/templates/selectors/'+criteria.template">
+            </div>
+            <button class="pull-left edit-button btn action-btn gap-10px" ng-click="criteria.selection.selected=false" ng-show="criteria.selection.selected" ng-disabled="criteria.ignored">
+                <span class="glyphicon glyphicon-pencil smaller-text"></span> Edit
+            </button>
+            <button class="pull-left delete-button btn action-btn" ng-if="criteria.deletable" ng-click="deleteCriteria(interestCriterias,criteria)">
+                <span class="glyphicon glyphicon-remove"></span>
+            </button>
+            <div class="clearfix"></div>
+        </div>
+        <button class="btn action-btn new-button" ng-click="addCriteria(interestCriterias)">ADD NEW CRITERIAS</button>
+    </tab>
+    <tab>
+        <tab-heading>
+            <span class="icon-button glyphicon glyphicon-map-marker"></span>
+        </tab-heading>
+        <div ng-repeat="criteria in placeLiveCriterias" class="fb-param {{criteria.ignored?'disabled':''}}">
+            <input type="checkbox" ng-model="criteria.ignored" ng-disabled="!criteria.selection" class="pull-left" ng-true-value="false" ng-false-value="true" />
+            <div class="pull-left criteria-name bordered" ng-if="!criteria.deletable">
+                {{criteria.name}}
+            </div>
+            <select class="gap-10px pull-left" ng-disabled="criteria.ignored" ng-if="criteria.deletable" ng-model="criteria.clone" ng-change="clone(criteria)" ng-options="selector.name for selector in placeCriteriaDropdownSelector" ng-init="initClone(placeCriteriaDropdownSelector,criteria)"></select>
+            <div class="pull-left selection gap-10px" ng-include src="'static/templates/selectors/'+criteria.template">
+            </div>
+            <button class="pull-left edit-button btn action-btn gap-10px" ng-click="criteria.selection.selected=false" ng-show="criteria.selection.selected" ng-disabled="criteria.ignored">
+                <span class="glyphicon glyphicon-pencil smaller-text"></span> Edit
+            </button>
+            <button class="pull-left delete-button btn action-btn" ng-if="criteria.deletable" ng-click="deleteCriteria(placeLiveCriterias,criteria)">
+                <span class="glyphicon glyphicon-remove"></span>
+            </button>
+            <div class="clearfix"></div>
+        </div>
+        <button class="btn action-btn new-button" ng-click="addCriteria(placeLiveCriterias)">ADD NEW CRITERIAS</button>
+    </tab>
+    <tab>
+        <tab-heading>
+            <span class="icon-button glyphicon glyphicon-globe"></span>
+        </tab-heading>
+    </tab>
+    <tab>
+        <tab-heading>
+            <span class="icon-button glyphicon glyphicon-education"></span>
+        </tab-heading>
+        <div ng-repeat="criteria in studentCriterias" class="fb-param {{criteria.ignored?'disabled':''}}">
+            <input type="checkbox" ng-model="criteria.ignored" ng-disabled="!criteria.selection" class="pull-left" ng-true-value="false" ng-false-value="true" />
+            <div class="pull-left criteria-name bordered" ng-if="!criteria.deletable">
+                {{criteria.name}}
+            </div>
+            <select class="gap-10px pull-left" ng-disabled="criteria.ignored" ng-if="criteria.deletable" ng-model="criteria.clone" ng-change="clone(criteria)" ng-options="selector.name for selector in studentCriteriaDropdownSelector"   ng-init="initClone(studentCriteriaDropdownSelector,criteria)"></select>
+            <div class="pull-left selection gap-10px" ng-include src="'static/templates/selectors/'+criteria.template">
+            </div>
+            <button class="pull-left edit-button btn action-btn gap-10px" ng-click="criteria.selection.selected=false" ng-show="criteria.selection.selected" ng-disabled="criteria.ignored">
+                <span class="glyphicon glyphicon-pencil smaller-text"></span> Edit
+            </button>
+            <button class="pull-left delete-button btn action-btn" ng-if="criteria.deletable" ng-click="deleteCriteria(studentCriterias,criteria)">
+                <span class="glyphicon glyphicon-remove"></span>
+            </button>
+            <div class="clearfix"></div>
+        </div>
+        <button class="btn action-btn new-button" ng-click="addCriteria(studentCriterias)">ADD NEW CRITERIAS</button>
+    </tab>
+    <tab>
+        <tab-heading>
+            <span class="icon-button glyphicon glyphicon-briefcase"></span>
+        </tab-heading>        
+        <div ng-repeat="criteria in employeeCriterias" class="fb-param {{criteria.ignored?'disabled':''}}">
+            <input type="checkbox" ng-model="criteria.ignored" ng-disabled="!criteria.selection" class="pull-left" ng-true-value="false" ng-false-value="true"/>
+            <div class="pull-left criteria-name bordered" ng-if="!criteria.deletable">
+                {{criteria.name}}
+            </div>
+            <select class="gap-10px pull-left" ng-disabled="criteria.ignored" ng-if="criteria.deletable" ng-model="criteria.clone" ng-change="clone(criteria)" ng-options="selector.name for selector in employeeCriteriaDropdownSelector"   ng-init="initClone(employeeCriteriaDropdownSelector,criteria)"></select>
+            <div class="pull-left selection gap-10px" ng-include src="'static/templates/selectors/'+criteria.template">
+            </div>
+            <button class="pull-left edit-button btn action-btn gap-10px" ng-click="criteria.selection.selected=false" ng-show="criteria.selection.selected" ng-disabled="criteria.ignored">
+                <span class="glyphicon glyphicon-pencil smaller-text"></span> Edit
+            </button>
+            <button class="pull-left delete-button btn action-btn" ng-if="criteria.deletable" ng-click="deleteCriteria(employeeCriterias,criteria)">
+                <span class="glyphicon glyphicon-remove"></span>
+            </button>
+            <div class="clearfix"></div>
+        </div>
+        <button class="btn action-btn new-button" ng-click="addCriteria(employeeCriterias)">ADD NEW CRITERIAS</button>
+    </tab>
+</tabset>	
 <a ng-click="expandSelection()" ng-show="!expandedMode">MORE...</a>
 <a ng-click="collapseSelection()" ng-show="expandedMode">LESS...</a>
-{{basicInfoIsOpen}}
+<br/>
+<a ng-click="composeUrl()">COMPOSE</a>
+<br/>
+<a href="{{composedUrl}}" target="_blank">{{composedUrl}}</a>

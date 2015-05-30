@@ -1,5 +1,5 @@
 BASIC
-
++
 live in
 member of group name
 fans of
@@ -9,9 +9,6 @@ comment about
 BASIC
 age
 gender
-relationship
-interested in
-religious view
 name
 
 LOCATION
@@ -20,9 +17,18 @@ living
 lived
 ever
 
+CONNECTION
+relationship
+
+
+
+
 FB INTERACTION: INTEREST, LIKES, GROUP, ETC
+religious view
+interested in
 likes
-commented
+
+
 group 
 
 EDUCATION

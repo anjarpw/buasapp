@@ -1,31 +1,35 @@
 angular.module('selectionModel', ["searchFormModel","facebookService"])
 .service('pageSelectionModel',["searchFormModel","facebookService",function(searchFormModel,facebookService){
   return {
-    generateGetSearchSelectionModel:function(suffix,queryType,filterFunc){
-      return function(){
-        return {
-          searchModel:searchFormModel.generateSearchFormModel(facebookService,queryType,20,20,filterFunc),
-          value:null,
-          selected:false,
-          onSearchItemSelected:function(newValue){
-            this.value=newValue;
+    getSearchSelectionModel:function(suffix,queryType,queryTypeKeyword, filterFunc){
+      queryTypeKeyword= queryTypeKeyword || "keywords_pages" ;
+      queryType=queryType|| "page";
+      return {
+        searchModel:searchFormModel.generateSearchFormModel(facebookService,queryType,20,20,filterFunc),
+        value:null,
+        selected:false,
+        onSearchItemSelected:function(newValue){
+          this.value=newValue;
+          this.selected=true;
+        },          
+        compose:function(){
+          if(!this.value && this.searchModel.lastKeyword!=""){
+            this.value=this.searchModel.lastKeyword;
             this.selected=true;
-          },          
-          compose:function(){
-            if(this.value){
-              var keyword="";
-              if(this.value.id){
-                keyword=this.value.id;
-              }else{
-                keyword="str/"+this.value+"/keywords_pages"
-              }
-                keyword+=suffix;
-                return keyword;                
+          }
+          if(this.value){
+            var keyword="";
+            if(this.value.id){
+              keyword=this.value.id;
+            }else{
+              keyword="str/"+this.value+"/"+queryTypeKeyword;
             }
-            return "";
-          }          
-        };        
-      }
+            keyword+=suffix;
+            return keyword;                
+          }
+          return "";
+        }          
+      };        
     }    
   }
 }])
@@ -45,11 +49,11 @@ angular.module('selectionModel', ["searchFormModel","facebookService"])
     },
     getAgeSelectionModel:function(){
       var possibleAges=[];
-      for(i=0; i<=100; i++){
+      for(i=1; i<=100; i++){
         possibleAges.push(i);
       }
       return {
-        value:{from:0,to:65},
+        value:{from:1,to:65},
         compose:function(){
           return this.value.from+"/"+this.value.to+"/users-age-2";
         },
