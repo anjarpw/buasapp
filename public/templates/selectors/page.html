@@ -1,19 +1,21 @@
 <div >
-	<autocomplete-fb-page disabled="$parent.criteria.ignored" ng-show="!$parent.criteria.selection.selected" 
+	<autocomplete-fb-page disabled="$parent.criteria.ignored" ng-show="!isSelected($parent.criteria)" 
 		model="$parent.criteria.selection.searchModel.model" 
 		on-change="$parent.criteria.selection.searchModel.populate($keyword,$callback)" 
 		on-selected="$parent.criteria.selection.onSearchItemSelected($newValue,$oldValue)">
 	</autocomplete-fb-page>
-	<div ng-show="$parent.criteria.selection.selected">
+	<div ng-show="isSelected($parent.criteria)" ng-click="unselected($parent.criteria)" >
 		<div class="selected-icon" ng-show="$parent.criteria.selection.value.id">
-			<img ng-src="//graph.facebook.com/{{$parent.criteria.selection.value.id}}/picture/" width="30" height="30" class="pull-left">
+			<img ng-src="//graph.facebook.com/{{$parent.criteria.selection.value.id}}/picture/" class="pull-left">
 			<div class="pull-left text-result">
 				{{$parent.criteria.selection.value.name}}			
 			</div>
+			<span class="edit glyphicon glyphicon-pencil"></span>
 			<div class="clearfix"></div>			
 		</div>
 		<div  ng-show="$parent.criteria.selection.value.id==undefined" class="selected-icon keyword">
 			<b>keyword: </b>{{$parent.criteria.selection.value}}	
+			<span class="edit glyphicon glyphicon-pencil"></span>
 		</div>
 	</div>
 </div>

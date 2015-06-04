@@ -1,6 +1,9 @@
 .btn.active.focus, .btn.active:focus, .btn.focus, .btn:active.focus, .btn:active:focus, .btn:focus{
 	outline:0;
 }
+body{
+	font-size:12px;
+}
 input:focus{
 	outline:0;	
 }
@@ -73,7 +76,7 @@ input:focus{
 		border:1px solid @gray;
 		background:white;
 		color:@blue;
-		line-height: 30px;
+		line-height: 40px;
 	}
 	.btn:hover{
 		background:@grayLight;
@@ -119,7 +122,7 @@ input:focus{
 	position: absolute;
 }
 .populated-items-text{
-	padding-left: 10px;
+	padding-left: 5px;
 	.subcategory{
 		font-size:11px;
 		color:@grayDark;	
@@ -149,37 +152,27 @@ input:focus{
 .fb-param{
 	margin-bottom: 10px;
 	select,input{
-		line-height: 40px;
-		height: 40px;
-		padding:0 10px;
+		line-height: 30px;
+		height: 30px;
+		padding:0 5px;
 		&:disabled{
 			color:@grayDark;
 		}		
 	}
 	select{
-		width: 160px;
+		width: 140px;
 	}
 
 	.criteria-name{
 		font-weight: bold;
-		line-height: 40px;
-		width: 160px;
-		margin-right: 10px;
-	}
-	.text-result{
 		line-height: 30px;
-		padding:0 10px;		
+		width: 140px;
 	}
 	select:disabled{
 		border:1px solid @gray;
 	}
-	.param-selector{
-		margin-right: 10px;
-	}
 	.delete-button{
 		color:red;
-		margin-top:5px;
-		margin-right: 10px;
 		background: white;
 		&:hover{
 			background:red;
@@ -188,8 +181,6 @@ input:focus{
 	}
 	.edit-button{
 		color:@blue;
-		margin-top:5px;
-		margin-right: 10px;
 		background: white;
 		&:hover{
 			background:@blue;
@@ -198,8 +189,6 @@ input:focus{
 	}
 	.ignore-button{
 		color:red;
-		margin-top:5px;
-		margin-right: 10px;
 		background: white;
 		&:hover{
 			background:red;
@@ -208,23 +197,63 @@ input:focus{
 	}
 	.selected-icon{
 		background: @grayLight;
+		cursor:pointer;
 		padding: 5px;
+		img{
+			width: 20px;
+			height: 20px;
+		}
+		.text-result{
+			line-height: 20px;
+			padding-left:5px;		
+		}
+		&:hover{
+			background:@blueLight;
+			color:white;
+		}
 	}
 	.keyword{
-		line-height: 30px;
-		padding:5px 15px;
+		line-height: 20px;
+		padding:5px;		
 		font-style: italic;
+		cursor:pointer;
+		&:hover{
+			content: "Edit";
+			background:@blueLight;
+			color:white;
+		}
 	}
 	.criteria-name.bordered{
-		padding-left: 15px;
+		padding-left: 5px;
 		border:1px solid @gray;
+		line-height: 28px;
 	}	
+	.edit {
+		margin-top: -1px;
+		margin-left: 10px;
+		background-color: white;
+		border-radius: 5px;
+		height: 20px;
+		padding: 0 10px;
+		line-height: 20px;
+	}	
+	.keyword:hover .edit, .selected-icon:hover .edit{
+		background-color:@blue;
+		color:white;
+	}
 }
 .new-button{
 	color:white;
 	margin-top:5px;
-	margin-right: 10px;
 	background: green;
+	margin:0px 0px 0px 25px;
+	.glyphicon{
+		margin-left: -8px;
+		margin-right: 8px;
+	}
+	&:focus{
+		color:white;
+	}
 	&:hover{
 		color:white;
 		background:mix(green,white,80);			
@@ -238,10 +267,11 @@ input:focus{
 .btn-option{
 	.btn{
 		background:white;
-		line-height: 40px;
-		height: 40px;
+		line-height: 28px;
+		height: 30px;
 		color:@blueDark;
-		border:1px solid @gray;		
+		border:1px solid @gray;
+		padding:0 10px;		
 		&.selected{
 			background:@blue;
 			color:white;
@@ -256,10 +286,10 @@ input[type=checkbox], input[type=radio] {
   line-height: normal;
   width: 16px;
   margin:0px;
-  margin-right: 10px;
+  margin-right: 10px;  
 }
-.gap-10px{
-	margin-right: 10px;
+.gap-right{
+	margin-right: 5px;
 }
 
 .fb-param.disabled{
@@ -280,46 +310,59 @@ input[type=checkbox], input[type=radio] {
 .panel-default {
   border-color: @gray;
 }
-.tabset{
-    .nav-stacked{
-        width:60px;
-        li{
-            margin-right:-2px;
-            border-radius:0;
-            a{
-                padding:0px;
-                height:60px;
-                border-radius: 5px 0 0 5px;
-                overflow:hidden;
-                background:@grayLight;
-                .icon-button{
-                    padding:15px;
-                    font-size:30px;
-                    line-height:30px;
-                }
-            }
-        }
-        li.active, li:active{
-            margin-right:-3px;
-            a{
-                background:white;
-                border: 1px solid @gray;
-                border-right: none;
-            }
-        }
-        float:left;
-    }
-    .tab-content{
-        border-radius:0 5px 5px 0;
-        height:400px;
-        width:~'calc(100% - 60px)';
-        float:left;
-        background:white;
-        border:1px solid @gray;
-        padding:20px;
-    }
-    .tab-content::after{
-        clear:both;
 
+.expanded-content{
+	.panel-heading{
+		padding:0px;
+		a{
+			width: 100%;
+			padding:0px 10px;
+			display: block;
+			font-size:12px;
+			line-height: 20px;
+			text-decoration: none;
+			&:hover{
+				background:@blue;
+				color:white;
+			}
+
+		}
+	}
+
+    width:~'calc(100% - 60px)';	
+    min-width: 500px;
+    float:left;
+    &::after{
+    	clear:both;
     }
+}
+
+.expanded-view-button{
+	transition: all 0.5s ease;	
+	.icon-button{
+		margin:5px;
+	    padding:10px;
+	    font-size:30px;
+	    line-height:30px;
+	    display: block;
+	    color:@gray;
+	    cursor:pointer;
+	    border-radius: 5px;
+	    &:hover{
+	    	color:@blue;
+	    	background:@grayLight;
+	    }
+	    &.selected{
+	    	color:@blueDark;
+	    	background:@grayLight;
+	    }
+	    &.selected:hover{
+	    	color:@blue;
+	    	background:none;
+	    }
+
+	}
+
+	width:60px;
+	float:left;
 }

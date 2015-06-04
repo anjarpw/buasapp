@@ -1,25 +1,39 @@
-angular.module('searchPeopleController', ["autocomplete","selectionModel"])
-.controller('searchPeopleController', ["$scope","peopleSelectionModel", "pageSelectionModel",
-  function($scope,PeopleSelectionModel,PageSelectionModel) {
+angular.module('searchPeopleController', ["autocomplete","selectionModel","searchFormModel","facebookService"])
+.controller('searchPeopleController', ["$scope","$window","$timeout","peopleSelectionModel", "pageSelectionModel","searchFormModel","facebookService",
+  function($scope,$window,$timeout, PeopleSelectionModel,PageSelectionModel,searchFormModel,facebookService) {
 
-    var locationBasedSearch=function(u){
-        var categories=["City","State/province/region","Country","Government Organization"];
-        var categoryTypes=["City","State","Province","Region","Country","Government Organization"];
-        if(u.category && categories.indexOf(u.category)>=0){
-            return true;
-        }
-        if(u.category_list && u.category_list.length>0 && categoryTypes.indexOf(u.category_list[0])>=0){
-            return true;
-        }
-        return false;
-    }
+   $scope.isSectionVisible=[];
+   $scope.isSectionVisible['BASIC']=true;
+   $scope.scrollHeight=0;
+    $($window).scroll(function() {
+        $timeout(function(){
+           $scope.scrollHeight=$(document).scrollTop(); 
+        });
+    });
+
+    $scope.expandedViewStyle=function(){
+        return {
+            marginTop:$scope.scrollHeight
+        };
+    };
+   $scope.toggleSectionVisible=function(key){
+        $scope.isSectionVisible[key]= !$scope.isSectionVisible[key] || false;
+   }
+
    var generatingPlaceLiveCriteria=function(){
         return {
             name:"Live in",
-            template:'place.html',
+            template:'live.html',
             ignored:false,
-            selected:false,
-            selection:PageSelectionModel.getSearchSelectionModel("/residents",null,null,locationBasedSearch)
+            selection:PageSelectionModel.getPlaceLiveSelectionModel()
+        };
+    };
+   var generatingPlaceVisitedCriteria=function(){
+        return {
+            name:"Visited",
+            template:'visited.html',
+            ignored:false,
+            selection:PageSelectionModel.getPlaceVisitedSelectionModel()
         };
     };
    var generatingLikersCriteria=function(){
@@ -27,79 +41,94 @@ angular.module('searchPeopleController', ["autocomplete","selectionModel"])
             name:"Likes",
             template:'page.html',
             ignored:false,
-            selected:false,
             selection:PageSelectionModel.getSearchSelectionModel("/likers")
         };
     };
-    var generatingWorkPastCriteria=function(){
+    var generatingEducationLocationCriteria=function(){      
+        var searchModel=searchFormModel.generateSearchFormModel(facebookService,"page",20,20,this.locationBasedSearch);
         return {
-            name:"Work at / as / in",
-            template:'page.html',
+            name:"Study in (Location)",
+            template:'education.html',
             ignored:false,
-            selected:false,
-            selection:PageSelectionModel.getSearchSelectionModel("/employees/past")
+            selection:PageSelectionModel.getEducationSelectionModel(searchModel)
         };
     };
-    var generatingWorkPresentCriteria=function(){
+    var generatingEducationMajorCriteria=function(){
+        var searchModel=searchFormModel.generateSearchFormModel(facebookService, "adeducationmajor",20,20);
         return {
-            name:"Working at / as",
-            template:'page.html',
+            name:"Study (Major)",
+            template:'education.html',
             ignored:false,
-            selected:false,
-            selection:PageSelectionModel.getSearchSelectionModel("/employees/present")
+            selection:PageSelectionModel.getEducationSelectionModel(searchModel)
         };
     };
-    var generatingStudentPastCriteria=function(){
+    var generatingEducationSchoolCriteria=function(){
+        var searchModel=searchFormModel.generateSearchFormModel(facebookService, "adeducationschool",20,20);
         return {
-            name:"Studied at/as/in",
-            template:'page.html',
+            name:"Study at (School)",
+            template:'education.html',
             ignored:false,
-            selected:false,
-            selection:PageSelectionModel.getSearchSelectionModel("/students/past")
+            selection:PageSelectionModel.getEducationSelectionModel(searchModel)
         };
     };
-    var generatingStudentPresentCriteria=function(){
+    var generatingWorkLocationCriteria=function(){
+        var searchModel = searchFormModel.generateSearchFormModel(facebookService,"page",20,20,this.locationBasedSearch);
         return {
-            name:"Studying at/as/in",
-            template:'page.html',
+            name:"Work in (Location)",
+            template:'education.html',
             ignored:false,
-            selected:false,
-            selection:PageSelectionModel.getSearchSelectionModel("/students/present")
+            selection:PageSelectionModel.getWorkSelectionModel(searchModel)
         };
     };
-    var generatingEmployeePastCriteria=function(){
+    var generatingWorkPositionCriteria=function(){
+        var searchModel = searchFormModel.generateSearchFormModel(facebookService, "adworkposition",20,20);
         return {
-            name:"Worked at/as/in",
-            template:'page.html',
+            name:"Work As (Position)",
+            template:'education.html',
             ignored:false,
-            selected:false,
-            selection:PageSelectionModel.getSearchSelectionModel("/employees/past")
+            selection:PageSelectionModel.getWorkSelectionModel(searchModel)
         };
     };
-    var generatingEmployeePresentCriteria=function(){
+    var generatingWorkEmployerCriteria=function(){
+        var searchModel = searchFormModel.generateSearchFormModel(facebookService, "adworkemployer",20,20);
         return {
-            name:"Working at/as/in",
-            template:'page.html',
+            name:"Work At (Employer)",
+            template:'education.html',
             ignored:false,
-            selected:false,
-            selection:PageSelectionModel.getSearchSelectionModel("/employees/present")
+            selection:PageSelectionModel.getWorkSelectionModel(searchModel)
         };
     };
-
+   var generatingGroupsCriteria=function(){
+        return {
+            name:"Group Member of",
+            template:'page.html',
+            ignored:true,
+            selection:PageSelectionModel.getSearchSelectionModel("/members","group","keywords_groups")
+        };
+    };
 
     var placeLiveCriteria=generatingPlaceLiveCriteria();
-    var studentPresentCriteria=generatingStudentPresentCriteria();
-    var studentPastCriteria=generatingStudentPastCriteria();
-    var employeePresentCriteria=generatingEmployeePresentCriteria();
-    var employeePastCriteria=generatingEmployeePastCriteria();
+    var placeVisitedCriteria=generatingPlaceVisitedCriteria();
+    
     var likersCriteria=generatingLikersCriteria();
-    var groupsCriteria={
-        name:"Group Member of",
-        template:'page.html',
-        ignored:false,
-        selected:false,
-        selection:PageSelectionModel.getSearchSelectionModel("/members","group","keywords_groups")
-    };
+
+    var educationLocationCriteria=generatingEducationLocationCriteria();
+    var educationMajorCriteria=generatingEducationMajorCriteria();
+    var educationSchoolCriteria=generatingEducationSchoolCriteria();
+
+    var workLocationCriteria=generatingWorkLocationCriteria();
+    var workEmployerCriteria=generatingWorkEmployerCriteria();
+    var workPositionCriteria=generatingWorkPositionCriteria();
+    
+    var groupsCriteria=generatingGroupsCriteria();
+
+    $scope.newtworksCriteriaDropdownSelector=[
+        {
+            name:"Groups",
+            generateCriteria:generatingGroupsCriteria
+        }
+    ];    
+
     var interestedInGenderCriteria={
         name:"Interested in",
         template:'interestedin.html',
@@ -110,27 +139,24 @@ angular.module('searchPeopleController', ["autocomplete","selectionModel"])
         name:"Religious view",
         template:'page.html',
         ignored:false,
-        selected:false,
-        selection:PageSelectionModel.getSearchSelectionModel("/users-religious-view")
+        selection:PageSelectionModel.getSearchSelectionModel("/users-religious-view",null,null,PageSelectionModel.religionBasedSearch)
     };
     var politicalViewCriteria = {
         name:"Political view",
         template:'page.html',
-        ignored:false,
-        selected:false,
+        ignored:true,
         selection:PageSelectionModel.getSearchSelectionModel("/users-political-view")
     };
     var relationshipStatusCriteria = {
         name:"Relationship Status",
         template:'relationshipstatus.html',
-        ignored:false,
-        selected:false,
+        ignored:true,
         selection:PeopleSelectionModel.getRelationshipSelectionModel()
     };
     var ageBetweenCriteria = {
         name:"Age between",
         template:'agebetween.html',
-        ignored:false,
+        ignored:true,
         selection:PeopleSelectionModel.getAgeSelectionModel()
     };
     var genderCriteria = {
@@ -145,55 +171,71 @@ angular.module('searchPeopleController', ["autocomplete","selectionModel"])
         relationshipStatusCriteria
     ];
 
-
     $scope.extendedCriterias=[
         placeLiveCriteria,
         likersCriteria,
         groupsCriteria,
         interestedInGenderCriteria,
-        religiousViewCriteria,
-        relationshipStatusCriteria
+        religiousViewCriteria
     ];
 
-    $scope.studentCriteriaDropdownSelector=[
+    $scope.educationCriteriaDropdownSelector=[
         {
-            name:"Studied at/as/in",
-            generateCriteria:generatingStudentPastCriteria
+            name:"Study at (School)",
+            generateCriteria:generatingEducationSchoolCriteria
         },
         {
-            name:"Studying at/as/in",
-            generateCriteria:generatingStudentPresentCriteria
-        }
-    ];    
-    $scope.studentCriterias=[
-        studentPastCriteria,
-        studentPresentCriteria
-    ];
-
-    $scope.employeeCriteriaDropdownSelector=[
-        {
-            name:"Worked at/as/in",
-            generateCriteria:generatingEmployeePastCriteria
+            name:"Study (Major)",
+            generateCriteria:generatingEducationMajorCriteria
         },
         {
-            name:"Working at/as/in",
-            generateCriteria:generatingEmployeePresentCriteria
+            name:"Study in (Location)",
+            generateCriteria:generatingEducationLocationCriteria
         }
     ];    
-    $scope.employeeCriterias=[
-        employeePastCriteria,
-        employeePresentCriteria
+    $scope.educationCriterias=[
+        educationSchoolCriteria,
+        educationMajorCriteria,
+        educationLocationCriteria
     ];
 
+    $scope.workCriteriaDropdownSelector=[
+        {
+            name:"Work at (Employer)",
+            generateCriteria:generatingWorkEmployerCriteria
+        },
+        {
+            name:"Work as (Position)",
+            generateCriteria:generatingWorkPositionCriteria
+        },
+        {
+            name:"Work in (Location)",
+            generateCriteria:generatingWorkLocationCriteria
+        }
+    ];    
+    $scope.workCriterias=[
+        workEmployerCriteria,
+        workPositionCriteria,
+        workLocationCriteria
+    ];
+
+    $scope.networksCriterias=[
+        groupsCriteria
+    ];
 
     $scope.placeCriteriaDropdownSelector=[
         {
             name:"Live in",
             generateCriteria:generatingPlaceLiveCriteria
+        },
+        {
+            name:"Visited ",
+            generateCriteria:generatingPlaceVisitedCriteria
         }
     ];    
     $scope.placeLiveCriterias=[
-        placeLiveCriteria
+        placeLiveCriteria,
+        placeVisitedCriteria
     ];
     $scope.interestCriteriaDropdownSelector=[
         {
@@ -226,11 +268,19 @@ angular.module('searchPeopleController', ["autocomplete","selectionModel"])
         criteria.name=newCriteria.name;
         criteria.template=newCriteria.template;
         criteria.ignored=newCriteria.ignored;
-        criteria.selected=newCriteria.selected;
         criteria.selection=newCriteria.selection;        
         criteria.deletable=true;
     }
+    $scope.activate=function(criteria){
+        criteria.ignored=false;
+    }
 
+    $scope.unselected=function(criteria){
+        criteria.selection.selected=false;
+    }
+    $scope.isSelected=function(criteria){
+        return criteria.selection.selected;
+    }
     $scope.expandSelection=function(){
         $scope.expandedMode=true;
     };
@@ -254,10 +304,11 @@ angular.module('searchPeopleController', ["autocomplete","selectionModel"])
 
         str=extendCompose(str,$scope.basicCriterias);
         if($scope.expandedMode){
-            str=extendCompose(str,$scope.placeCriterias);
+            str=extendCompose(str,$scope.placeLiveCriterias);
             str=extendCompose(str,$scope.interestCriterias);
-            str=extendCompose(str,$scope.studentCriterias);
-            str=extendCompose(str,$scope.employeeCriterias);
+            str=extendCompose(str,$scope.educationCriterias);
+            str=extendCompose(str,$scope.workCriterias);
+            str=extendCompose(str,$scope.networksCriterias);
         }else{
             str=extendCompose(str,$scope.extendedCriterias);
         }

@@ -66,7 +66,7 @@ angular.module('autocomplete', [])
             $callback:function(result){
               if(result){
                 scope.populatedItems=result;
-                scope.caret=-1;
+                scope.adjustCaret();
               }
             }
           };
@@ -77,7 +77,11 @@ angular.module('autocomplete', [])
         scope.caret=idx;
         scope.selectCurrent();
       }
-
+      scope.adjustCaret=function(){
+        if(scope.caret>=scope.populatedItems.length){
+          scope.caret=-1;
+        }
+      }
       scope.selectCurrent=function(){
         var oldValue=scope.model;
         if(scope.caret==-1){

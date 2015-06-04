@@ -66,7 +66,7 @@ angular.module('autocomplete', [])
             $callback:function(result){
               if(result){
                 scope.populatedItems=result;
-                scope.caret=-1;
+                scope.adjustCaret();
               }
             }
           };
@@ -77,7 +77,11 @@ angular.module('autocomplete', [])
         scope.caret=idx;
         scope.selectCurrent();
       }
-
+      scope.adjustCaret=function(){
+        if(scope.caret>=scope.populatedItems.length){
+          scope.caret=-1;
+        }
+      }
       scope.selectCurrent=function(){
         var oldValue=scope.model;
         if(scope.caret==-1){
@@ -359,6 +363,37 @@ angular.module('buasApp', ["facebookService","ui.bootstrap","searchPeopleControl
 angular.module('searchFormModel', [])
 .service("searchFormModel",function(){
   return {
+    generateMultipleSearchFormModels:function(models){
+      return {
+        models:models,
+        lastKeyword:"",
+        populate:function(keyword,callback){
+          this.lastKeyword=keyword;
+          var handlerList=[];
+          var individualCallbackHandler=function(model){
+            var handler={};
+            handler.populatedData=[];
+            var singleCallback=function(item){
+              handler.populatedData=item;
+              iteratePopulatedData();
+            };
+            model.populate(keyword,singleCallback);
+            return handler;
+          };
+          var iteratePopulatedData=function(){
+          var populatedData=[];
+            handlerList.forEach(function(handler){
+              populatedData=populatedData.concat(handler.populatedData);
+              callback(populatedData);
+            });
+          };
+          models.forEach(function(model){
+            handlerList.push(individualCallbackHandler(model));
+            i++;
+          });
+        }
+      }
+    },
     generateSearchFormModel:function(facebookService, type, queryLimit, showLimit, filter){
       queryLimit=queryLimit || 8;
       showLimit= showLimit || 8;
@@ -378,7 +413,6 @@ angular.module('searchFormModel', [])
           },
           populate:function(keyword, callback){
             this.lastKeyword=keyword;
-            var clearedKeyword=keyword;
             var obj={
               type:this.type,
               q:keyword,
@@ -388,7 +422,7 @@ angular.module('searchFormModel', [])
             var populatedData=[];
             this.cancelPreviousRequest();
             var t=this;
-            callback(populatedData);                                          
+            callback(populatedData);                                                      
             var callApi=function(){
               var deferred=facebookService.useApi("search",obj);
               t.httpDeferredRequests.push(deferred);
@@ -396,10 +430,11 @@ angular.module('searchFormModel', [])
                 res.data.forEach(function(u){
                   if(t.filter(u) && populatedData.length<t.showLimit){
                     populatedData.push(u);
+                    callback(populatedData);                                          
                   }
                 });
                 var possibleMore= res.data.length>0;
-                if(populatedData.length<t.showLimit && possibleMore){                  
+                if(populatedData.length<t.showLimit && possibleMore && res.paging){                  
                   obj.after=res.paging.cursors.after;
                   callApi();
                 }
@@ -413,28 +448,42 @@ angular.module('searchFormModel', [])
     }
   };
 });
-angular.module('searchPeopleController', ["autocomplete","selectionModel"])
-.controller('searchPeopleController', ["$scope","peopleSelectionModel", "pageSelectionModel",
-  function($scope,PeopleSelectionModel,PageSelectionModel) {
+angular.module('searchPeopleController', ["autocomplete","selectionModel","searchFormModel","facebookService"])
+.controller('searchPeopleController', ["$scope","$window","$timeout","peopleSelectionModel", "pageSelectionModel","searchFormModel","facebookService",
+  function($scope,$window,$timeout, PeopleSelectionModel,PageSelectionModel,searchFormModel,facebookService) {
 
-    var locationBasedSearch=function(u){
-        var categories=["City","State/province/region","Country","Government Organization"];
-        var categoryTypes=["City","State","Province","Region","Country","Government Organization"];
-        if(u.category && categories.indexOf(u.category)>=0){
-            return true;
-        }
-        if(u.category_list && u.category_list.length>0 && categoryTypes.indexOf(u.category_list[0])>=0){
-            return true;
-        }
-        return false;
-    }
+   $scope.isSectionVisible=[];
+   $scope.isSectionVisible['BASIC']=true;
+   $scope.scrollHeight=0;
+    $($window).scroll(function() {
+        $timeout(function(){
+           $scope.scrollHeight=$(document).scrollTop(); 
+        });
+    });
+
+    $scope.expandedViewStyle=function(){
+        return {
+            marginTop:$scope.scrollHeight
+        };
+    };
+   $scope.toggleSectionVisible=function(key){
+        $scope.isSectionVisible[key]= !$scope.isSectionVisible[key] || false;
+   }
+
    var generatingPlaceLiveCriteria=function(){
         return {
             name:"Live in",
-            template:'place.html',
+            template:'live.html',
             ignored:false,
-            selected:false,
-            selection:PageSelectionModel.getSearchSelectionModel("/residents",null,null,locationBasedSearch)
+            selection:PageSelectionModel.getPlaceLiveSelectionModel()
+        };
+    };
+   var generatingPlaceVisitedCriteria=function(){
+        return {
+            name:"Visited",
+            template:'visited.html',
+            ignored:false,
+            selection:PageSelectionModel.getPlaceVisitedSelectionModel()
         };
     };
    var generatingLikersCriteria=function(){
@@ -442,79 +491,94 @@ angular.module('searchPeopleController', ["autocomplete","selectionModel"])
             name:"Likes",
             template:'page.html',
             ignored:false,
-            selected:false,
             selection:PageSelectionModel.getSearchSelectionModel("/likers")
         };
     };
-    var generatingWorkPastCriteria=function(){
+    var generatingEducationLocationCriteria=function(){      
+        var searchModel=searchFormModel.generateSearchFormModel(facebookService,"page",20,20,this.locationBasedSearch);
         return {
-            name:"Work at / as / in",
-            template:'page.html',
+            name:"Study in (Location)",
+            template:'education.html',
             ignored:false,
-            selected:false,
-            selection:PageSelectionModel.getSearchSelectionModel("/employees/past")
+            selection:PageSelectionModel.getEducationSelectionModel(searchModel)
         };
     };
-    var generatingWorkPresentCriteria=function(){
+    var generatingEducationMajorCriteria=function(){
+        var searchModel=searchFormModel.generateSearchFormModel(facebookService, "adeducationmajor",20,20);
         return {
-            name:"Working at / as",
-            template:'page.html',
+            name:"Study (Major)",
+            template:'education.html',
             ignored:false,
-            selected:false,
-            selection:PageSelectionModel.getSearchSelectionModel("/employees/present")
+            selection:PageSelectionModel.getEducationSelectionModel(searchModel)
         };
     };
-    var generatingStudentPastCriteria=function(){
+    var generatingEducationSchoolCriteria=function(){
+        var searchModel=searchFormModel.generateSearchFormModel(facebookService, "adeducationschool",20,20);
         return {
-            name:"Studied at/as/in",
-            template:'page.html',
+            name:"Study at (School)",
+            template:'education.html',
             ignored:false,
-            selected:false,
-            selection:PageSelectionModel.getSearchSelectionModel("/students/past")
+            selection:PageSelectionModel.getEducationSelectionModel(searchModel)
         };
     };
-    var generatingStudentPresentCriteria=function(){
+    var generatingWorkLocationCriteria=function(){
+        var searchModel = searchFormModel.generateSearchFormModel(facebookService,"page",20,20,this.locationBasedSearch);
         return {
-            name:"Studying at/as/in",
-            template:'page.html',
+            name:"Work in (Location)",
+            template:'education.html',
             ignored:false,
-            selected:false,
-            selection:PageSelectionModel.getSearchSelectionModel("/students/present")
+            selection:PageSelectionModel.getWorkSelectionModel(searchModel)
         };
     };
-    var generatingEmployeePastCriteria=function(){
+    var generatingWorkPositionCriteria=function(){
+        var searchModel = searchFormModel.generateSearchFormModel(facebookService, "adworkposition",20,20);
         return {
-            name:"Worked at/as/in",
-            template:'page.html',
+            name:"Work As (Position)",
+            template:'education.html',
             ignored:false,
-            selected:false,
-            selection:PageSelectionModel.getSearchSelectionModel("/employees/past")
+            selection:PageSelectionModel.getWorkSelectionModel(searchModel)
         };
     };
-    var generatingEmployeePresentCriteria=function(){
+    var generatingWorkEmployerCriteria=function(){
+        var searchModel = searchFormModel.generateSearchFormModel(facebookService, "adworkemployer",20,20);
         return {
-            name:"Working at/as/in",
-            template:'page.html',
+            name:"Work At (Employer)",
+            template:'education.html',
             ignored:false,
-            selected:false,
-            selection:PageSelectionModel.getSearchSelectionModel("/employees/present")
+            selection:PageSelectionModel.getWorkSelectionModel(searchModel)
         };
     };
-
+   var generatingGroupsCriteria=function(){
+        return {
+            name:"Group Member of",
+            template:'page.html',
+            ignored:true,
+            selection:PageSelectionModel.getSearchSelectionModel("/members","group","keywords_groups")
+        };
+    };
 
     var placeLiveCriteria=generatingPlaceLiveCriteria();
-    var studentPresentCriteria=generatingStudentPresentCriteria();
-    var studentPastCriteria=generatingStudentPastCriteria();
-    var employeePresentCriteria=generatingEmployeePresentCriteria();
-    var employeePastCriteria=generatingEmployeePastCriteria();
+    var placeVisitedCriteria=generatingPlaceVisitedCriteria();
+    
     var likersCriteria=generatingLikersCriteria();
-    var groupsCriteria={
-        name:"Group Member of",
-        template:'page.html',
-        ignored:false,
-        selected:false,
-        selection:PageSelectionModel.getSearchSelectionModel("/members","group","keywords_groups")
-    };
+
+    var educationLocationCriteria=generatingEducationLocationCriteria();
+    var educationMajorCriteria=generatingEducationMajorCriteria();
+    var educationSchoolCriteria=generatingEducationSchoolCriteria();
+
+    var workLocationCriteria=generatingWorkLocationCriteria();
+    var workEmployerCriteria=generatingWorkEmployerCriteria();
+    var workPositionCriteria=generatingWorkPositionCriteria();
+    
+    var groupsCriteria=generatingGroupsCriteria();
+
+    $scope.newtworksCriteriaDropdownSelector=[
+        {
+            name:"Groups",
+            generateCriteria:generatingGroupsCriteria
+        }
+    ];    
+
     var interestedInGenderCriteria={
         name:"Interested in",
         template:'interestedin.html',
@@ -525,27 +589,24 @@ angular.module('searchPeopleController', ["autocomplete","selectionModel"])
         name:"Religious view",
         template:'page.html',
         ignored:false,
-        selected:false,
-        selection:PageSelectionModel.getSearchSelectionModel("/users-religious-view")
+        selection:PageSelectionModel.getSearchSelectionModel("/users-religious-view",null,null,PageSelectionModel.religionBasedSearch)
     };
     var politicalViewCriteria = {
         name:"Political view",
         template:'page.html',
-        ignored:false,
-        selected:false,
+        ignored:true,
         selection:PageSelectionModel.getSearchSelectionModel("/users-political-view")
     };
     var relationshipStatusCriteria = {
         name:"Relationship Status",
         template:'relationshipstatus.html',
-        ignored:false,
-        selected:false,
+        ignored:true,
         selection:PeopleSelectionModel.getRelationshipSelectionModel()
     };
     var ageBetweenCriteria = {
         name:"Age between",
         template:'agebetween.html',
-        ignored:false,
+        ignored:true,
         selection:PeopleSelectionModel.getAgeSelectionModel()
     };
     var genderCriteria = {
@@ -560,55 +621,71 @@ angular.module('searchPeopleController', ["autocomplete","selectionModel"])
         relationshipStatusCriteria
     ];
 
-
     $scope.extendedCriterias=[
         placeLiveCriteria,
         likersCriteria,
         groupsCriteria,
         interestedInGenderCriteria,
-        religiousViewCriteria,
-        relationshipStatusCriteria
+        religiousViewCriteria
     ];
 
-    $scope.studentCriteriaDropdownSelector=[
+    $scope.educationCriteriaDropdownSelector=[
         {
-            name:"Studied at/as/in",
-            generateCriteria:generatingStudentPastCriteria
+            name:"Study at (School)",
+            generateCriteria:generatingEducationSchoolCriteria
         },
         {
-            name:"Studying at/as/in",
-            generateCriteria:generatingStudentPresentCriteria
-        }
-    ];    
-    $scope.studentCriterias=[
-        studentPastCriteria,
-        studentPresentCriteria
-    ];
-
-    $scope.employeeCriteriaDropdownSelector=[
-        {
-            name:"Worked at/as/in",
-            generateCriteria:generatingEmployeePastCriteria
+            name:"Study (Major)",
+            generateCriteria:generatingEducationMajorCriteria
         },
         {
-            name:"Working at/as/in",
-            generateCriteria:generatingEmployeePresentCriteria
+            name:"Study in (Location)",
+            generateCriteria:generatingEducationLocationCriteria
         }
     ];    
-    $scope.employeeCriterias=[
-        employeePastCriteria,
-        employeePresentCriteria
+    $scope.educationCriterias=[
+        educationSchoolCriteria,
+        educationMajorCriteria,
+        educationLocationCriteria
     ];
 
+    $scope.workCriteriaDropdownSelector=[
+        {
+            name:"Work at (Employer)",
+            generateCriteria:generatingWorkEmployerCriteria
+        },
+        {
+            name:"Work as (Position)",
+            generateCriteria:generatingWorkPositionCriteria
+        },
+        {
+            name:"Work in (Location)",
+            generateCriteria:generatingWorkLocationCriteria
+        }
+    ];    
+    $scope.workCriterias=[
+        workEmployerCriteria,
+        workPositionCriteria,
+        workLocationCriteria
+    ];
+
+    $scope.networksCriterias=[
+        groupsCriteria
+    ];
 
     $scope.placeCriteriaDropdownSelector=[
         {
             name:"Live in",
             generateCriteria:generatingPlaceLiveCriteria
+        },
+        {
+            name:"Visited ",
+            generateCriteria:generatingPlaceVisitedCriteria
         }
     ];    
     $scope.placeLiveCriterias=[
-        placeLiveCriteria
+        placeLiveCriteria,
+        placeVisitedCriteria
     ];
     $scope.interestCriteriaDropdownSelector=[
         {
@@ -641,11 +718,19 @@ angular.module('searchPeopleController', ["autocomplete","selectionModel"])
         criteria.name=newCriteria.name;
         criteria.template=newCriteria.template;
         criteria.ignored=newCriteria.ignored;
-        criteria.selected=newCriteria.selected;
         criteria.selection=newCriteria.selection;        
         criteria.deletable=true;
     }
+    $scope.activate=function(criteria){
+        criteria.ignored=false;
+    }
 
+    $scope.unselected=function(criteria){
+        criteria.selection.selected=false;
+    }
+    $scope.isSelected=function(criteria){
+        return criteria.selection.selected;
+    }
     $scope.expandSelection=function(){
         $scope.expandedMode=true;
     };
@@ -669,10 +754,11 @@ angular.module('searchPeopleController', ["autocomplete","selectionModel"])
 
         str=extendCompose(str,$scope.basicCriterias);
         if($scope.expandedMode){
-            str=extendCompose(str,$scope.placeCriterias);
+            str=extendCompose(str,$scope.placeLiveCriterias);
             str=extendCompose(str,$scope.interestCriterias);
-            str=extendCompose(str,$scope.studentCriterias);
-            str=extendCompose(str,$scope.employeeCriterias);
+            str=extendCompose(str,$scope.educationCriterias);
+            str=extendCompose(str,$scope.workCriterias);
+            str=extendCompose(str,$scope.networksCriterias);
         }else{
             str=extendCompose(str,$scope.extendedCriterias);
         }
@@ -686,12 +772,44 @@ angular.module('searchPeopleController', ["autocomplete","selectionModel"])
 ;
 angular.module('selectionModel', ["searchFormModel","facebookService"])
 .service('pageSelectionModel',["searchFormModel","facebookService",function(searchFormModel,facebookService){
+  var handleKeywordValue = function(selection){
+    if(!(selection.value && selection.value.id!=undefined) && selection.searchModel.lastKeyword!=undefined && selection.searchModel.lastKeyword!=""){
+          selection.value=selection.searchModel.lastKeyword;
+          selection.selected=true;
+    }
+  };
+
   return {
-    getSearchSelectionModel:function(suffix,queryType,queryTypeKeyword, filterFunc){
-      queryTypeKeyword= queryTypeKeyword || "keywords_pages" ;
-      queryType=queryType|| "page";
+    locationBasedSearch:function(u){
+      var categories=["City","State/province/region","Country","Government Organization"];
+      var categoryTypes=["City","State","Province","Region","Country","Government Organization"];
+      if(u.category && categories.indexOf(u.category)>=0){
+          return true;
+      }
+      if(u.category_list && u.category_list.length>0 && categoryTypes.indexOf(u.category_list[0])>=0){
+          return true;
+      }
+      return false;
+    },
+    religionBasedSearch:function(u){
+      var categories=["Religion"];
+      if(u.category && categories.indexOf(u.category)>=0){
+          return true;
+      }
+      return false;
+    },
+    getYears:function(){
+      var years=[];
+      var thisYear=(new Date()).getFullYear();
+      for(i=1; i<=100; i++){
+        years.push(thisYear-i);
+      }
+      return years;
+    },
+
+    getCommonSearchSelectionModel:function(searchModel){
       return {
-        searchModel:searchFormModel.generateSearchFormModel(facebookService,queryType,20,20,filterFunc),
+        searchModel:searchModel,
         value:null,
         selected:false,
         onSearchItemSelected:function(newValue){
@@ -699,51 +817,167 @@ angular.module('selectionModel', ["searchFormModel","facebookService"])
           this.selected=true;
         },          
         compose:function(){
-          if(!this.value && this.searchModel.lastKeyword!=""){
-            this.value=this.searchModel.lastKeyword;
-            this.selected=true;
+        }
+      };      
+    },
+    getWorkSelectionModel:function(searchModel){
+      if(!searchModel){
+        searchModel=searchFormModel.generateMultipleSearchFormModels([
+          searchFormModel.generateSearchFormModel(facebookService,"page",20,20,this.locationBasedSearch),
+          searchFormModel.generateSearchFormModel(facebookService, "adworkemployer",20,20),
+          searchFormModel.generateSearchFormModel(facebookService, "adworkposition",20,20)
+        ]);        
+      };
+      var selectionModel = this.getCommonSearchSelectionModel(searchModel);
+      selectionModel.timeFrame="";
+      selectionModel.yearOptions=this.getYears();
+      selectionModel.year=selectionModel.yearOptions[0];
+      selectionModel.compose = function(){
+        handleKeywordValue(this);
+        if(this.value){
+          var keyword="";
+          if(this.value.id){
+            keyword=this.value.id;
+          }else{
+            keyword="str/"+this.value+"/keywords_pages";
           }
-          if(this.value){
-            var keyword="";
-            if(this.value.id){
-              keyword=this.value.id;
-            }else{
-              keyword="str/"+this.value+"/"+queryTypeKeyword;
-            }
-            keyword+=suffix;
-            return keyword;                
+          if(this.timeFrame=='/date'){
+            keyword+="/"+this.year+"/date/employees-2";
+          }else{
+            keyword+="/employees"+this.timeFrame;
           }
-          return "";
-        }          
-      };        
+          return keyword;                
+        }
+        return "";
+      };
+      return selectionModel;
+    },    
+
+
+    getEducationSelectionModel:function(searchModel){
+      if(!searchModel){
+        var searchModel=searchFormModel.generateMultipleSearchFormModels([
+          searchFormModel.generateSearchFormModel(facebookService,"page",20,20,this.locationBasedSearch),
+          searchFormModel.generateSearchFormModel(facebookService, "adeducationschool",20,20),
+          searchFormModel.generateSearchFormModel(facebookService, "adeducationmajor",20,20)
+        ]);
+      };      
+      var selectionModel = this.getCommonSearchSelectionModel(searchModel);
+      selectionModel.timeFrame="";
+      selectionModel.yearOptions=this.getYears();
+      selectionModel.year=selectionModel.yearOptions[0];
+      selectionModel.compose = function(){
+        handleKeywordValue(this);
+        if(this.value){
+          var keyword="";
+          if(this.value.id){
+            keyword=this.value.id;
+          }else{
+            keyword="str/"+this.value+"/keywords_pages";
+          }
+          if(this.timeFrame=='/date'){
+            keyword+="/"+this.year+"/date/students-2";
+          }else{
+            keyword+="/students"+this.timeFrame;
+          }
+          return keyword;                
+        }
+        return "";
+      };
+      return selectionModel;
+    },    
+    getPlaceVisitedSelectionModel:function(){
+      var searchModel=searchFormModel.generateMultipleSearchFormModels([
+          searchFormModel.generateSearchFormModel(facebookService,"page",20,20,this.locationBasedSearch),
+          searchFormModel.generateSearchFormModel(facebookService, "place",20,20)
+        ]);
+      var selectionModel = this.getCommonSearchSelectionModel(searchModel);
+      selectionModel.compose = function(){
+        handleKeywordValue(this);
+        if(this.value){
+          var keyword="";
+          if(this.value.id){
+            keyword=this.value.id;
+          }else{
+            keyword="str/"+this.value+"/keywords_pages";
+          }
+          keyword+="/visitors";
+          return keyword;                
+        }
+        return "";
+      };
+      return selectionModel;
+    },
+    getPlaceLiveSelectionModel:function(){
+      var searchModel = searchFormModel.generateSearchFormModel(facebookService,"page",20,20,this.locationBasedSearch);
+      var selectionModel = this.getCommonSearchSelectionModel(searchModel);
+      selectionModel.timeFrame="";
+      selectionModel.compose = function(){
+        handleKeywordValue(this);
+        if(this.value){
+          var keyword="";
+          if(this.value.id){
+            keyword=this.value.id;
+          }else{
+            keyword="str/"+this.value+"/keywords_pages";
+          }
+          keyword+="/residents"+this.timeFrame;
+          return keyword;                
+        }
+        return "";
+      };
+      return selectionModel;
+    },
+    getSearchSelectionModel:function(suffix,queryType,queryTypeKeyword, filterFunc){
+      queryTypeKeyword= queryTypeKeyword || "keywords_pages" ;
+      queryType=queryType|| "page";
+      var searchModel = searchFormModel.generateSearchFormModel(facebookService,queryType,20,20,filterFunc);
+      var commonSearchModel = this.getCommonSearchSelectionModel(searchModel);
+      commonSearchModel.compose = function(){
+        handleKeywordValue(this);
+        if(this.value){
+          var keyword="";
+          if(this.value.id){
+            keyword=this.value.id;
+          }else{
+            keyword="str/"+this.value+"/"+queryTypeKeyword;
+          }
+          keyword+=suffix;
+          return keyword;                
+        }
+        return "";
+      };          
+      return commonSearchModel;
     }    
   }
 }])
 .service('peopleSelectionModel',["searchFormModel","facebookService",function(searchFormModel,facebookService){
-
-  var searchLocationFunc=function(u){
-    return ["City","State","Country","County","Region", "Province","Region", "Government organization"].indexOf(u.category)>=0;
-  };  
   return {
     getRelationshipSelectionModel:function(){
       return {
         value:"",
         compose:function(){
-          return this.value+"/users";
+          if(this.value){
+            return this.value+"/users";
+          }
+          return "";
         }
       };
     },
-    getAgeSelectionModel:function(){
+    getPossibleAges:function(){
       var possibleAges=[];
       for(i=1; i<=100; i++){
         possibleAges.push(i);
       }
+      return possibleAges;
+    },
+    getAgeSelectionModel:function(){
       return {
         value:{from:1,to:65},
         compose:function(){
           return this.value.from+"/"+this.value.to+"/users-age-2";
         },
-        possibleAges:possibleAges
+        possibleAges:this.getPossibleAges()
       };
     },
     getGenderSelectionModel:function(){
